@@ -148,8 +148,8 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
-        tag_name: v${{ steps.package-version.outputs.version }}
-        release_name: Aqua Player v${{ steps.package-version.outputs.version }}
+        tag_name: v${{ steps.package-version.outputs.version }}-dev-${{ github.run_number }}
+        release_name: Aqua Player Beta v${{ steps.package-version.outputs.version }} (Dev Build #${{ github.run_number }})
         body: |
           🌊 **Aqua Player**
 
