@@ -134,6 +134,13 @@ jobs:
         ls -la ./release-artifacts/windows/
         echo "=== macOS artifacts ==="
         ls -la ./release-artifacts/macos/
+        echo "=== Finding exact filenames ==="
+        WIN_FILE=$(find ./release-artifacts/windows/ -name "*.exe" -type f | head -n 1)
+        MAC_FILE=$(find ./release-artifacts/macos/ -name "*.dmg" -type f | head -n 1)
+        echo "WIN_FILE=${WIN_FILE}" >> $GITHUB_ENV
+        echo "MAC_FILE=${MAC_FILE}" >> $GITHUB_ENV
+        echo "Windows file: ${WIN_FILE}"
+        echo "macOS file: ${MAC_FILE}"
 
     - name: Create Release
       id: create_release
@@ -178,7 +185,7 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: ./release-artifacts/windows/*.exe
+        asset_path: ${{ env.WIN_FILE }}
         asset_name: Aqua-Player-${{ steps.package-version.outputs.version }}-Setup.exe
         asset_content_type: application/octet-stream
 
@@ -188,6 +195,6 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: ./release-artifacts/macos/aqua-player.dmg
+        asset_path: ${{ env.MAC_FILE }}
         asset_name: aqua-player-${{ steps.package-version.outputs.version }}-darwin-x64.dmg
         asset_content_type: application/octet-stream
