@@ -1,6 +1,6 @@
 {
-  "name": "electron-videoplayer",
-  "productName": "electron-videoplayer",
+  "name": "tap-water-player",
+  "productName": "tap-water-player",
   "version": "1.0.0",
   "description": "My Electron application description",
   "main": ".webpack/main",
@@ -20,6 +20,7 @@
   "devDependencies": {
     "@electron-forge/cli": "^7.8.2",
     "@electron-forge/maker-deb": "^7.8.2",
+    "@electron-forge/maker-dmg": "^7.8.2",
     "@electron-forge/maker-rpm": "^7.8.2",
     "@electron-forge/maker-squirrel": "^7.8.2",
     "@electron-forge/maker-zip": "^7.8.2",

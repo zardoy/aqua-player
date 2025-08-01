@@ -33,6 +33,13 @@ const VideoPlayer = () => {
     const handlePause = () => videoActions.pause();
     const handleTimeUpdate = () => {
       videoActions.setCurrentTime(video.currentTime);
+
+      // Update progress bar color
+      if (seekBarRef.current) {
+        const progress = video.currentTime / video.duration;
+        const percentage = (progress * 100) + '%';
+        seekBarRef.current.style.background = `linear-gradient(to right, var(--accent-color) 0%, var(--accent-color) ${percentage}, rgba(255, 255, 255, 0.2) ${percentage})`;
+      }
     };
     const handleDurationChange = () => {
       videoActions.setDuration(video.duration);
@@ -217,6 +224,8 @@ const VideoPlayer = () => {
       }
 
       setShowControls(true);
+      // Show cursor when UI is shown
+      document.body.style.cursor = 'default';
 
       if (controlsTimeout) {
         clearTimeout(controlsTimeout);
@@ -225,6 +234,8 @@ const VideoPlayer = () => {
       const timeout = setTimeout(() => {
         if (snap.isPlaying && !isForceHidden) {
           setShowControls(false);
+          // Hide cursor when UI is hidden
+          document.body.style.cursor = 'none';
         }
       }, 3000);
 
@@ -233,6 +244,14 @@ const VideoPlayer = () => {
 
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Backspace') {
+        isForceHidden = true;
+        setShowControls(false);
+        if (controlsTimeout) {
+          clearTimeout(controlsTimeout);
+        }
+      } else if (e.key === ' ') {
+        // Space key - hide UI and cursor
+        e.preventDefault();
         isForceHidden = true;
         setShowControls(false);
         if (controlsTimeout) {
@@ -263,6 +282,11 @@ const VideoPlayer = () => {
   const handleSeekBarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const progress = parseFloat(e.target.value);
     videoActions.setProgress(progress);
+
+    // Update progress bar color
+    const seekBar = e.target;
+    const percentage = (progress * 100) + '%';
+    seekBar.style.background = `linear-gradient(to right, var(--accent-color) 0%, var(--accent-color) ${percentage}, rgba(255, 255, 255, 0.2) ${percentage})`;
   };
 
   // Handle volume bar input
@@ -382,11 +406,27 @@ const VideoPlayer = () => {
                     <button onClick={() => videoActions.toggleMute()} className="control-button">
                       {snap.isMuted ? <FaVolumeMute /> : snap.volume > 0.5 ? <FaVolumeUp /> : <FaVolumeDown />}
                     </button>
+                    <input
+                      type="range"
+                      ref={volumeBarRef}
+                      className="volume-bar"
+                      min="0"
+                      max="1"
+                      step="0.1"
+                      value={snap.isMuted ? 0 : snap.volume}
+                      onChange={handleVolumeBarChange}
+                    />
                   </div>
 
-                  <div className="time-display">
+                                    <div className="time-display">
                     {formatTime(snap.currentTime)} / {formatTime(snap.duration)}
                   </div>
+
+                  {videoTitle && (
+                    <div className="video-title" title={videoTitle}>
+                      {videoTitle}
+                    </div>
+                  )}
 
                   {videoResolution && (
                     <div className="resolution-badge">

@@ -1,0 +1,154 @@
+name: Build and Release
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+
+    - name: Install dependencies
+      run: npm ci
+
+    - name: Build Windows executable
+      run: npm run make
+      env:
+        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Upload Windows artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: electron-videoplayer-windows
+        path: out/electron-videoplayer-win32-x64/
+        retention-days: 30
+
+  build-macos:
+    runs-on: macos-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+
+    - name: Install dependencies
+      run: npm ci
+
+    - name: Build macOS DMG
+      run: npm run make
+      env:
+        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Upload macOS artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: electron-videoplayer-macos
+        path: out/electron-videoplayer-darwin-x64/
+        retention-days: 30
+
+  release:
+    needs: [build-windows, build-macos]
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Download Windows artifacts
+      uses: actions/download-artifact@v4
+      with:
+        name: electron-videoplayer-windows
+        path: ./release-artifacts/windows/
+
+    - name: Download macOS artifacts
+      uses: actions/download-artifact@v4
+      with:
+        name: electron-videoplayer-macos
+        path: ./release-artifacts/macos/
+
+    - name: Get version from package.json
+      id: package-version
+      run: echo "version=$(node -p "require('./package.json').version")" >> $GITHUB_OUTPUT
+
+    - name: List artifacts
+      run: |
+        echo "=== Release artifacts ==="
+        ls -la ./release-artifacts/
+        echo "=== Windows artifacts ==="
+        ls -la ./release-artifacts/windows/
+        echo "=== macOS artifacts ==="
+        ls -la ./release-artifacts/macos/
+
+    - name: Create Release
+      id: create_release
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: v${{ steps.package-version.outputs.version }}
+        release_name: Tap Water Player v${{ steps.package-version.outputs.version }}
+        body: |
+          🎬 **Tap Water Player**
+
+          A modern, feature-rich video player built with Electron.
+
+          **Features:**
+          - 🎥 Local video file playback
+          - 🖱️ Drag & drop support
+          - 🎛️ Custom protocol for secure file loading
+          - 🎨 Modern UI with auto-hide controls
+          - ⚡ Auto-play functionality
+          - 🎵 Volume control with slider
+          - 📱 Platform-specific window controls
+          - 🎯 Customizable accent colors
+          - 🔄 Toast notifications
+
+          **Downloads:**
+          - Windows: See attached assets
+          - macOS: See attached assets
+
+          **Installation:**
+          Download the appropriate file for your platform and run the installer.
+
+          **Usage:**
+          - Drag and drop video files onto the player
+          - Use the folder button to browse for files
+          - Press Space to toggle play/pause
+          - Press Backspace to hide UI
+          - Mouse movement shows/hides controls automatically
+        draft: false
+        prerelease: false
+
+    - name: Upload Windows Release Asset
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: ./release-artifacts/windows/electron-videoplayer.exe
+        asset_name: electron-videoplayer-${{ steps.package-version.outputs.version }}-win32-x64.exe
+        asset_content_type: application/octet-stream
+
+    - name: Upload macOS Release Asset
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: ./release-artifacts/macos/electron-videoplayer.dmg
+        asset_name: electron-videoplayer-${{ steps.package-version.outputs.version }}-darwin-x64.dmg
+        asset_content_type: application/octet-stream

@@ -9,6 +9,18 @@ body {
   width: 100vw;
 }
 
+/* Remove focus outlines */
+*:focus {
+  outline: none;
+}
+
+/* Customizable accent color */
+:root {
+  --accent-color: #00aaff;
+  --accent-color-hover: #0099ee;
+  --accent-color-active: #0088dd;
+}
+
 .app-container {
   display: flex;
   flex-direction: column;
@@ -172,12 +184,19 @@ body {
   cursor: pointer;
 }
 
+/* Progress bar filled portion */
+/* .seek-bar::-webkit-slider-runnable-track {
+  background: linear-gradient(to right, var(--accent-color) 0%, var(--accent-color) var(--progress, 0%), rgba(255, 255, 255, 0.2) var(--progress, 0%));
+  border-radius: 5px;
+  height: 5px;
+} */
+
 .seek-bar::-webkit-slider-thumb {
   -webkit-appearance: none;
   appearance: none;
   width: 12px;
   height: 12px;
-  background: #00aaff;
+  background: var(--accent-color);
   cursor: pointer;
   border-radius: 50%;
   box-shadow: 0 0 5px rgba(0, 170, 255, 0.5);
@@ -186,7 +205,7 @@ body {
 .seek-bar::-moz-range-thumb {
   width: 12px;
   height: 12px;
-  background: #00aaff;
+  background: var(--accent-color);
   cursor: pointer;
   border-radius: 50%;
   box-shadow: 0 0 5px rgba(0, 170, 255, 0.5);
@@ -198,6 +217,15 @@ body {
   min-width: 80px;
   text-align: left;
   margin-left: 15px;
+}
+
+.video-title {
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.7);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 200px;
 }
 
 .resolution-badge {
@@ -265,25 +293,32 @@ body {
   color: rgba(255, 255, 255, 0.8);
   font-size: 16px;
   cursor: pointer;
-  padding: 5px 8px;
+  padding: 8px;
   margin: 0 2px;
   border-radius: 4px;
   transition: all 0.2s ease;
+  outline: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
 }
 
 .control-button:hover {
-  color: #00aaff;
+  color: var(--accent-color);
   background-color: rgba(0, 170, 255, 0.1);
 }
 
 .control-button.active {
-  color: #00aaff;
+  color: var(--accent-color);
   background-color: rgba(0, 170, 255, 0.2);
 }
 
 .volume-control {
   display: flex;
   align-items: center;
+  margin-left: 10px;
 }
 
 .volume-bar {
@@ -301,7 +336,7 @@ body {
   appearance: none;
   width: 10px;
   height: 10px;
-  background: #00aaff;
+  background: var(--accent-color);
   cursor: pointer;
   border-radius: 50%;
 }
@@ -309,7 +344,7 @@ body {
 .volume-bar::-moz-range-thumb {
   width: 10px;
   height: 10px;
-  background: #00aaff;
+  background: var(--accent-color);
   cursor: pointer;
   border-radius: 50%;
 }
