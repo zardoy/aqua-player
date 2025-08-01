@@ -45,7 +45,7 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: aqua-player-windows
-        path: out/aqua-player-win32-x64/
+        path: out/make/aqua-player.exe
         retention-days: 30
 
   build-macos:
@@ -88,7 +88,7 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: aqua-player-macos
-        path: out/aqua-player-darwin-x64/
+        path: out/make/aqua-player.dmg
         retention-days: 30
 
   release:

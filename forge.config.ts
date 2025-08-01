@@ -18,11 +18,15 @@ const config: ForgeConfig = {
   },
   rebuildConfig: {},
   makers: [
-    new MakerSquirrel({}),
-    new MakerZIP({}, ['darwin']),
-    new MakerDMG({}),
-    new MakerRpm({}),
-    new MakerDeb({})
+    new MakerSquirrel({
+      name: 'aqua-player',
+    }),
+    // new MakerZIP({}, ['darwin']),
+    new MakerDMG({
+      name: 'aqua-player',
+    }),
+    // new MakerRpm({}),
+    // new MakerDeb({})
   ],
   plugins: [
     new AutoUnpackNativesPlugin({}),

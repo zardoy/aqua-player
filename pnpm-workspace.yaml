@@ -3,3 +3,5 @@ nodeLinker: hoisted
 onlyBuiltDependencies:
   - electron
   - electron-winstaller
+  - fs-xattr
+  - macos-alias
