@@ -9,6 +9,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
   // File operations
   openFileDialog: () => ipcRenderer.invoke('open-file-dialog'),
   getFilePath: (file: File) => webUtils.getPathForFile(file),
+  openFileInExplorer: (filePath: string) => ipcRenderer.invoke('open-file-in-explorer', filePath),
 
   // Window controls
   minimizeWindow: () => ipcRenderer.send('minimize-window'),

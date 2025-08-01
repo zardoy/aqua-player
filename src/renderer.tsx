@@ -2,12 +2,12 @@ import React, { useEffect, useRef, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useSnapshot } from 'valtio';
-import { FaPlay, FaPause, FaForward, FaBackward, FaVolumeUp, FaVolumeDown, FaVolumeMute, FaExpand, FaFolder, FaCog, FaTimes } from 'react-icons/fa';
-import { MdSubtitles, MdAirplay } from 'react-icons/md';
+import { FaTimes } from 'react-icons/fa';
 import './index.css';
 import { videoState, videoActions, defaultKeymap } from './store/videoStore';
 import SettingsPanel from './components/SettingsPanel';
 import KeymapDialog from './components/KeymapDialog';
+import VideoControls from './components/VideoControls';
 import { Toaster, toast } from 'sonner';
 
 const VideoPlayer = () => {
@@ -18,8 +18,6 @@ const VideoPlayer = () => {
   const [showControls, setShowControls] = useState(true);
   const [controlsTimeout, setControlsTimeout] = useState<NodeJS.Timeout | null>(null);
   const [currentTime, setCurrentTime] = useState(new Date().toLocaleTimeString());
-  const [videoResolution, setVideoResolution] = useState<string>('');
-  const [videoTitle, setVideoTitle] = useState<string>('');
 
   const snap = useSnapshot(videoState);
 
@@ -133,16 +131,8 @@ const VideoPlayer = () => {
       };
 
       const handleCanPlay = () => {
-        // Get video metadata
-        const videoWidth = video.videoWidth;
-        const videoHeight = video.videoHeight;
-        if (videoWidth && videoHeight) {
-          setVideoResolution(`${videoHeight}p`);
-        }
 
-        // Extract title from filename
-        const fileName = snap.currentFile.split('/').slice(-1)[0] || snap.currentFile.split('\\').slice(-1)[0] || '';
-        setVideoTitle(fileName.replace(/\.[^/.]+$/, '')); // Remove file extension
+
 
         // Auto-play the video when it's ready
         video.play().catch(error => {
@@ -295,11 +285,7 @@ const VideoPlayer = () => {
     videoActions.setVolume(volume);
   };
 
-  const formatTime = (seconds: number) => {
-    const mins = Math.floor(seconds / 60);
-    const secs = Math.floor(seconds % 60);
-    return `${mins}:${secs.toString().padStart(2, '0')}`;
-  };
+
 
   const handleOpenFile = async () => {
     await videoActions.loadFile();
@@ -373,93 +359,15 @@ const VideoPlayer = () => {
           onClick={(e) => e.stopPropagation()}
         />
 
-        <AnimatePresence>
-          {showControls && (
-            <motion.div
-              className="video-controls"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: 20 }}
-              transition={{ duration: 0.2 }}
-              onClick={(e) => e.stopPropagation()}
-            >
-              <div className="progress-container">
-                <input
-                  type="range"
-                  ref={seekBarRef}
-                  className="seek-bar"
-                  min="0"
-                  max="1"
-                  step="0.001"
-                  value={snap.progress}
-                  onChange={handleSeekBarChange}
-                />
-              </div>
-
-              <div className="controls-row">
-                <div className="left-controls">
-                  <button onClick={() => videoActions.togglePlay()} className="control-button">
-                    {snap.isPlaying ? <FaPause /> : <FaPlay />}
-                  </button>
-
-                  <div className="volume-control">
-                    <button onClick={() => videoActions.toggleMute()} className="control-button">
-                      {snap.isMuted ? <FaVolumeMute /> : snap.volume > 0.5 ? <FaVolumeUp /> : <FaVolumeDown />}
-                    </button>
-                    <input
-                      type="range"
-                      ref={volumeBarRef}
-                      className="volume-bar"
-                      min="0"
-                      max="1"
-                      step="0.1"
-                      value={snap.isMuted ? 0 : snap.volume}
-                      onChange={handleVolumeBarChange}
-                    />
-                  </div>
-
-                                    <div className="time-display">
-                    {formatTime(snap.currentTime)} / {formatTime(snap.duration)}
-                  </div>
-
-                  {videoTitle && (
-                    <div className="video-title" title={videoTitle}>
-                      {videoTitle}
-                    </div>
-                  )}
-
-                  {videoResolution && (
-                    <div className="resolution-badge">
-                      {videoResolution}
-                    </div>
-                  )}
-                </div>
-
-                                <div className="right-controls">
-                  <div className="download-speed">
-                    <div className="speed-indicator">
-                      <div className="speed-dot"></div>
-                      1.2 MB/s
-                    </div>
-                  </div>
-
-                  {snap.subtitleTracks.length > 0 && (
-                    <button
-                      onClick={() => videoActions.toggleSubtitles()}
-                      className={`control-button ${snap.showSubtitles ? 'active' : ''}`}
-                    >
-                      <MdSubtitles />
-                    </button>
-                  )}
-
-                  <button onClick={handleOpenFile} className="control-button"><FaFolder /></button>
-                  <button onClick={() => videoActions.toggleSettings()} className="control-button"><FaCog /></button>
-                  <button onClick={() => videoActions.toggleFullScreen()} className="control-button"><FaExpand /></button>
-                </div>
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
+        <VideoControls
+          showControls={showControls}
+          onSeekBarChange={handleSeekBarChange}
+          onVolumeBarChange={handleVolumeBarChange}
+          onOpenFile={handleOpenFile}
+          seekBarRef={seekBarRef}
+          volumeBarRef={volumeBarRef}
+          videoRef={videoRef}
+        />
 
         {/* Settings Panel */}
         <AnimatePresence>

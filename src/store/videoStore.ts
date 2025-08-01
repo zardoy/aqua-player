@@ -353,6 +353,7 @@ declare global {
       platform: string;
       openFileDialog: () => Promise<{ canceled: boolean; filePaths: string[] }>;
       getFilePath: (file: File) => string;
+      openFileInExplorer: (filePath: string) => Promise<void>;
       minimizeWindow: () => void;
       maximizeWindow: () => void;
       closeWindow: () => void;

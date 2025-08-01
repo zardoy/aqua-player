@@ -1,4 +1,4 @@
-import { app, BrowserWindow, dialog, ipcMain, Menu, protocol, net } from 'electron';
+import { app, BrowserWindow, dialog, ipcMain, Menu, protocol, net, shell } from 'electron';
 import * as path from 'path';
 import * as fs from 'fs';
 import { pathToFileURL } from 'url';
@@ -45,6 +45,13 @@ const createWindow = (): void => {
     show: false,
     frame: false, // Make window borderless
     titleBarStyle: 'hidden',
+    titleBarOverlay: {
+      color: 'rgba(0, 0, 0, 0)',
+      symbolColor: '#ffffff',
+      height: 30,
+    },
+    // dark theme
+    darkTheme: true,
   });
 
 
@@ -120,6 +127,11 @@ const setupIpcHandlers = () => {
 
   ipcMain.on('close-window', () => {
     mainWindow?.close();
+  });
+
+  // Handle opening file in explorer/finder
+  ipcMain.handle('open-file-in-explorer', async (event, filePath: string) => {
+    shell.showItemInFolder(filePath);
   });
 };
 
