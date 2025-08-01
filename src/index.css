@@ -31,77 +31,26 @@ body {
   background-color: #000;
 }
 
-/* Floating Controls */
-.floating-controls {
+/* Floating Time */
+.floating-time-container {
   position: fixed;
   top: 0;
-  left: 0;
-  right: 0;
+  right: 15px;
   height: 38px;
   z-index: 1000;
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  padding: 0 15px;
   pointer-events: none;
 }
 
-.floating-controls.macos .window-controls {
-  order: 1;
-}
-
-.floating-controls.windows .window-controls {
-  order: 2;
+.floating-time-container.windows {
+  right: 130px; /* Space for Windows native controls */
 }
 
 .floating-time {
-  order: 2;
   font-size: 12px;
   color: rgba(255, 255, 255, 0.8);
   pointer-events: none;
-}
-
-.floating-controls.macos .floating-time {
-  order: 2;
-}
-
-.floating-controls.windows .floating-time {
-  order: 1;
-}
-
-/* Title Bar (hidden) */
-.title-bar {
-  display: none;
-}
-
-.window-controls {
-  display: flex;
-  pointer-events: auto;
-  margin-right: 10px;
-}
-
-.window-control {
-  width: 12px;
-  height: 12px;
-  border-radius: 50%;
-  margin-right: 8px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 9px;
-  color: rgba(255, 255, 255, 0.7);
-}
-
-.window-control.close {
-  background-color: #ff5f57;
-}
-
-.window-control.minimize {
-  background-color: #ffbd2e;
-}
-
-.window-control.maximize {
-  background-color: #28c940;
 }
 
 .title {

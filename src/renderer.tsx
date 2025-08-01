@@ -331,24 +331,7 @@ const VideoPlayer = () => {
     <div className="app-container">
       <Toaster position="top-right" richColors theme='dark' offset={{ top: 30 }} />
                   {/* Floating window controls - positioned based on platform */}
-      <div className={`floating-controls ${window.electronAPI.platform === 'darwin' ? 'macos' : 'windows'}`}>
-        {window.electronAPI.platform === 'darwin' ? (
-          // macOS controls on the left
-          <div className="window-controls">
-            {/* <button onClick={() => window.electronAPI.closeWindow()} className="window-control close">×</button>
-            <button onClick={() => window.electronAPI.minimizeWindow()} className="window-control minimize">—</button>
-            <button onClick={() => window.electronAPI.maximizeWindow()} className="window-control maximize">□</button> */}
-          </div>
-        ) : (
-          // Windows controls on the right
-          <div className="window-controls">
-            <button onClick={() => window.electronAPI.minimizeWindow()} className="window-control minimize">—</button>
-            <button onClick={() => window.electronAPI.maximizeWindow()} className="window-control maximize">□</button>
-            <button onClick={() => window.electronAPI.closeWindow()} className="window-control close">×</button>
-          </div>
-        )}
-
-        {/* Time display on the right */}
+      <div className={`floating-time-container ${window.electronAPI.platform === 'win32' ? 'windows' : ''}`}>
         <div className="floating-time">{currentTime}</div>
       </div>
 

@@ -27,4 +27,13 @@ contextBridge.exposeInMainWorld('electronAPI', {
   startRemoteServer: () => ipcRenderer.invoke('start-remote-server'),
   stopRemoteServer: () => ipcRenderer.invoke('stop-remote-server'),
   getRemotePlaybackUrl: () => ipcRenderer.invoke('get-remote-playback-url'),
+
+  // Settings
+  loadSettings: () => ipcRenderer.invoke('load-settings'),
+  saveSettings: (settings: any) => ipcRenderer.invoke('save-settings', settings),
+
+  // Window dragging
+  startWindowDrag: (mouseX: number, mouseY: number) => ipcRenderer.send('window-drag-start', { mouseX, mouseY }),
+  moveWindow: (mouseX: number, mouseY: number, startBounds: any, startMouseX: number, startMouseY: number) =>
+    ipcRenderer.send('window-drag-move', { mouseX, mouseY, startBounds, startMouseX, startMouseY }),
 });

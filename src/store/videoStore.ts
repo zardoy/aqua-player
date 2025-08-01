@@ -365,6 +365,8 @@ declare global {
       startRemoteServer: () => Promise<string>;
       stopRemoteServer: () => Promise<void>;
       getRemotePlaybackUrl: () => Promise<string>;
+      loadSettings: () => Promise<any>;
+      saveSettings: (settings: any) => Promise<boolean>;
     };
   }
 }
