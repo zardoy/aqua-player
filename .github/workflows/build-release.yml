@@ -51,7 +51,7 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: aqua-player-windows
-        path: out/make/aqua-player.exe
+        path: out/make/squirrel.windows/x64/*.exe
         retention-days: 30
 
   build-macos:
@@ -174,8 +174,8 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: ./release-artifacts/windows/aqua-player.exe
-        asset_name: aqua-player-${{ steps.package-version.outputs.version }}-win32-x64.exe
+        asset_path: ./release-artifacts/windows/*.exe
+        asset_name: Aqua-Player-${{ steps.package-version.outputs.version }}-Setup.exe
         asset_content_type: application/octet-stream
 
     - name: Upload macOS Release Asset
