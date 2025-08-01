@@ -15,23 +15,55 @@ body {
   height: 100vh;
   width: 100vw;
   overflow: hidden;
+  background-color: #000;
 }
 
-/* Title Bar */
-.title-bar {
-  display: flex;
-  align-items: center;
-  background-color: #1a1a1a;
+/* Floating Controls */
+.floating-controls {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
   height: 38px;
-  -webkit-app-region: drag;
-  padding: 0 10px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
-  z-index: 10;
+  z-index: 1000;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 15px;
+  pointer-events: none;
+}
+
+.floating-controls.macos .window-controls {
+  order: 1;
+}
+
+.floating-controls.windows .window-controls {
+  order: 2;
+}
+
+.floating-time {
+  order: 2;
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.8);
+  pointer-events: none;
+}
+
+.floating-controls.macos .floating-time {
+  order: 2;
+}
+
+.floating-controls.windows .floating-time {
+  order: 1;
+}
+
+/* Title Bar (hidden) */
+.title-bar {
+  display: none;
 }
 
 .window-controls {
   display: flex;
-  -webkit-app-region: no-drag;
+  pointer-events: auto;
   margin-right: 10px;
 }
 
@@ -67,14 +99,37 @@ body {
   text-align: center;
 }
 
-.spacer {
-  width: 60px;
+.system-time {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.8);
+  margin-right: 15px;
+}
+
+.settings-icon {
+  -webkit-app-region: no-drag;
+}
+
+.settings-button {
+  background: none;
+  border: none;
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 16px;
+  cursor: pointer;
+  padding: 5px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.settings-button:hover {
+  color: #ffffff;
 }
 
 /* Video Container */
 .video-container {
   position: relative;
   flex-grow: 1;
+  height: 100vh;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -141,7 +196,56 @@ body {
   font-size: 12px;
   color: rgba(255, 255, 255, 0.8);
   min-width: 80px;
-  text-align: right;
+  text-align: left;
+  margin-left: 15px;
+}
+
+.resolution-badge {
+  background-color: rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.8);
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 500;
+  margin-left: 10px;
+}
+
+.download-speed {
+  display: flex;
+  align-items: center;
+  margin-right: 15px;
+}
+
+.speed-indicator {
+  display: flex;
+  align-items: center;
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.speed-dot {
+  width: 6px;
+  height: 6px;
+  background-color: #4ade80;
+  border-radius: 50%;
+  margin-right: 5px;
+}
+
+.status-indicator {
+  margin-right: 15px;
+}
+
+.status-shield {
+  width: 16px;
+  height: 16px;
+  background-color: #4ade80;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 10px;
+  font-weight: bold;
 }
 
 .controls-row {
@@ -219,11 +323,20 @@ body {
 }
 
 /* Settings Panel */
+.settings-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
 .settings-panel {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
   background-color: rgba(30, 30, 30, 0.95);
   border-radius: 8px;
   box-shadow: 0 5px 20px rgba(0, 0, 0, 0.5);
@@ -231,7 +344,7 @@ body {
   max-width: 90%;
   max-height: 80%;
   overflow-y: auto;
-  z-index: 10;
+  z-index: 1001;
 }
 
 .settings-header {
@@ -473,16 +586,16 @@ body {
     padding: 5px;
     font-size: 14px;
   }
-  
+
   .volume-bar {
     width: 40px;
   }
-  
+
   .time-display {
     min-width: 60px;
     font-size: 11px;
   }
-  
+
   .settings-panel, .keymap-dialog {
     width: 90%;
   }

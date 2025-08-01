@@ -40,11 +40,11 @@ export const videoState = proxy({
   duration: 0,
   currentTime: 0,
   playbackRate: 1,
-  
+
   // File state
   currentFile: '',
   fileType: '',
-  
+
   // Tracks
   videoTracks: [] as VideoTrack[],
   audioTracks: [] as AudioTrack[],
@@ -53,22 +53,22 @@ export const videoState = proxy({
   currentAudioTrack: 0,
   currentSubtitleTrack: -1, // -1 means no subtitle
   showSubtitles: true,
-  
+
   // Remote playback
   isRemoteServerRunning: false,
   remotePlaybackUrl: '',
-  
+
   // AirPlay
   airPlayAvailable: false,
   airPlayDevices: [] as string[],
   isAirPlaying: false,
   currentAirPlayDevice: '',
-  
+
   // UI state
   showControls: true,
   isSettingsOpen: false,
   isKeymapDialogOpen: false,
-  
+
   // Error handling
   hasError: false,
   errorMessage: '',
@@ -92,11 +92,11 @@ export const videoActions = {
     videoState.currentTime = time;
     videoState.progress = videoState.duration > 0 ? time / videoState.duration : 0;
   },
-  seekForward: (seconds: number = 10) => {
+  seekForward: (seconds = 10) => {
     const newTime = Math.min(videoState.currentTime + seconds, videoState.duration);
     videoActions.setCurrentTime(newTime);
   },
-  seekBackward: (seconds: number = 10) => {
+  seekBackward: (seconds = 10) => {
     const newTime = Math.max(videoState.currentTime - seconds, 0);
     videoActions.setCurrentTime(newTime);
   },
@@ -112,23 +112,23 @@ export const videoActions = {
     const newTime = Math.max(videoState.currentTime - frameDuration, 0);
     videoActions.setCurrentTime(newTime);
   },
-  
+
   // Volume controls
   setVolume: (volume: number) => {
     const clampedVolume = Math.max(0, Math.min(1, volume));
     videoState.volume = clampedVolume;
     videoState.isMuted = clampedVolume === 0;
   },
-  increaseVolume: (amount: number = 0.1) => {
+  increaseVolume: (amount = 0.1) => {
     videoActions.setVolume(videoState.volume + amount);
   },
-  decreaseVolume: (amount: number = 0.1) => {
+  decreaseVolume: (amount = 0.1) => {
     videoActions.setVolume(videoState.volume - amount);
   },
   toggleMute: () => {
     videoState.isMuted = !videoState.isMuted;
   },
-  
+
   // Playback rate
   setPlaybackRate: (rate: number) => {
     videoState.playbackRate = rate;
@@ -150,13 +150,13 @@ export const videoActions = {
   resetPlaybackRate: () => {
     videoState.playbackRate = 1;
   },
-  
+
   // Screen controls
   toggleFullScreen: () => {
     videoState.isFullScreen = !videoState.isFullScreen;
     window.electronAPI.toggleFullscreen();
   },
-  
+
   // File operations
   loadFile: async () => {
     try {
@@ -175,7 +175,7 @@ export const videoActions = {
       return null;
     }
   },
-  
+
   // Load file from path (for drag and drop)
   loadFilePath: (filePath: string) => {
     try {
@@ -227,16 +227,16 @@ export const videoActions = {
     videoActions.selectAudioTrack(nextIndex);
   },
   previousAudioTrack: () => {
-    const prevIndex = videoState.currentAudioTrack - 1 < 0 ? 
+    const prevIndex = videoState.currentAudioTrack - 1 < 0 ?
       videoState.audioTracks.length - 1 : videoState.currentAudioTrack - 1;
     videoActions.selectAudioTrack(prevIndex);
   },
-  
+
   // Duration and time
   setDuration: (duration: number) => {
     videoState.duration = duration;
   },
-  
+
   // Remote playback
   startRemoteServer: async () => {
     try {
@@ -260,7 +260,7 @@ export const videoActions = {
       videoState.errorMessage = `Failed to stop remote server: ${error.message}`;
     }
   },
-  
+
   // AirPlay
   checkAirPlayAvailability: async () => {
     try {
@@ -302,7 +302,7 @@ export const videoActions = {
       videoState.errorMessage = `Failed to stop AirPlay: ${error.message}`;
     }
   },
-  
+
   // UI controls
   toggleControls: () => {
     videoState.showControls = !videoState.showControls;
@@ -313,7 +313,7 @@ export const videoActions = {
   toggleKeymapDialog: () => {
     videoState.isKeymapDialogOpen = !videoState.isKeymapDialogOpen;
   },
-  
+
   // Error handling
   clearError: () => {
     videoState.hasError = false;
@@ -350,7 +350,9 @@ export const defaultKeymap: KeymapAction[] = [
 declare global {
   interface Window {
     electronAPI: {
+      platform: string;
       openFileDialog: () => Promise<{ canceled: boolean; filePaths: string[] }>;
+      getFilePath: (file: File) => string;
       minimizeWindow: () => void;
       maximizeWindow: () => void;
       closeWindow: () => void;

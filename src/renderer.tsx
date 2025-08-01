@@ -6,6 +6,9 @@ import { FaPlay, FaPause, FaForward, FaBackward, FaVolumeUp, FaVolumeDown, FaVol
 import { MdSubtitles, MdAirplay } from 'react-icons/md';
 import './index.css';
 import { videoState, videoActions, defaultKeymap } from './store/videoStore';
+import SettingsPanel from './components/SettingsPanel';
+import KeymapDialog from './components/KeymapDialog';
+import { Toaster, toast } from 'sonner';
 
 const VideoPlayer = () => {
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -14,6 +17,9 @@ const VideoPlayer = () => {
   const containerRef = useRef<HTMLDivElement>(null);
   const [showControls, setShowControls] = useState(true);
   const [controlsTimeout, setControlsTimeout] = useState<NodeJS.Timeout | null>(null);
+  const [currentTime, setCurrentTime] = useState(new Date().toLocaleTimeString());
+  const [videoResolution, setVideoResolution] = useState<string>('');
+  const [videoTitle, setVideoTitle] = useState<string>('');
 
   const snap = useSnapshot(videoState);
 
@@ -103,27 +109,54 @@ const VideoPlayer = () => {
     if (!video || !snap.currentFile) return;
 
     try {
-      // For local files, we need to use a blob URL
-      if (snap.currentFile.startsWith('file://') || snap.currentFile.startsWith('/')) {
-        video.src = snap.currentFile;
-      } else {
-        video.src = snap.currentFile;
-      }
+      // Use custom protocol for local files to avoid CSP issues
+      const fileUrl = snap.currentFile.startsWith('local-file://') ? snap.currentFile : `file://${snap.currentFile}`;
+      video.src = fileUrl;
 
       // Add error handling for video loading
-      const handleError = (e) => {
-        console.error('Video error:', e);
-        videoActions.setError(`Failed to load video: ${e.target.error?.message || 'Unknown error'}`);
+      const handleError = (e: Event) => {
+        const target = e.target as HTMLVideoElement;
+        const errorMessage = `Failed to load video: ${target.error?.message || 'Unknown error'}`;
+        videoActions.setError(errorMessage);
+        toast.error(errorMessage);
+      };
+
+      const handleLoadStart = () => {
+        // toast.info('Loading video...');
+      };
+
+      const handleCanPlay = () => {
+        // Get video metadata
+        const videoWidth = video.videoWidth;
+        const videoHeight = video.videoHeight;
+        if (videoWidth && videoHeight) {
+          setVideoResolution(`${videoHeight}p`);
+        }
+
+        // Extract title from filename
+        const fileName = snap.currentFile.split('/').slice(-1)[0] || snap.currentFile.split('\\').slice(-1)[0] || '';
+        setVideoTitle(fileName.replace(/\.[^/.]+$/, '')); // Remove file extension
+
+        // Auto-play the video when it's ready
+        video.play().catch(error => {
+          console.error('Auto-play failed:', error);
+        });
       };
 
       video.addEventListener('error', handleError);
+      video.addEventListener('loadstart', handleLoadStart);
+      video.addEventListener('canplay', handleCanPlay);
 
       return () => {
         video.removeEventListener('error', handleError);
+        video.removeEventListener('loadstart', handleLoadStart);
+        video.removeEventListener('canplay', handleCanPlay);
       };
     } catch (error) {
       console.error('Error setting video source:', error);
-      videoActions.setError(`Failed to load video: ${error.message}`);
+      const errorMessage = `Failed to load video: ${error.message}`;
+      videoActions.setError(errorMessage);
+      toast.error(errorMessage);
     }
   }, [snap.currentFile]);
 
@@ -149,9 +182,40 @@ const VideoPlayer = () => {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, []);
 
-  // Auto-hide controls
+  // Update system time every second
   useEffect(() => {
-    const handleMouseMove = () => {
+    const timer = setInterval(() => {
+      setCurrentTime(new Intl.DateTimeFormat(undefined, { hour: '2-digit', minute: '2-digit' }).format(new Date()));
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, []);
+
+  // Auto-hide controls with improved logic
+  useEffect(() => {
+    let lastMouseX = 0;
+    let lastMouseY = 0;
+    let isForceHidden = false;
+
+    const handleMouseMove = (e: MouseEvent) => {
+      const currentX = e.clientX;
+      const currentY = e.clientY;
+
+      // Check for small mouse jitter (less than 5px movement)
+      const deltaX = Math.abs(currentX - lastMouseX);
+      const deltaY = Math.abs(currentY - lastMouseY);
+
+      if (deltaX < 5 && deltaY < 5) {
+        return; // Ignore small movements
+      }
+
+      lastMouseX = currentX;
+      lastMouseY = currentY;
+
+      if (isForceHidden) {
+        isForceHidden = false;
+      }
+
       setShowControls(true);
 
       if (controlsTimeout) {
@@ -159,7 +223,7 @@ const VideoPlayer = () => {
       }
 
       const timeout = setTimeout(() => {
-        if (snap.isPlaying) {
+        if (snap.isPlaying && !isForceHidden) {
           setShowControls(false);
         }
       }, 3000);
@@ -167,15 +231,28 @@ const VideoPlayer = () => {
       setControlsTimeout(timeout);
     };
 
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Backspace') {
+        isForceHidden = true;
+        setShowControls(false);
+        if (controlsTimeout) {
+          clearTimeout(controlsTimeout);
+        }
+      }
+    };
+
     const container = containerRef.current;
     if (container) {
       container.addEventListener('mousemove', handleMouseMove);
     }
 
+    window.addEventListener('keydown', handleKeyDown);
+
     return () => {
       if (container) {
         container.removeEventListener('mousemove', handleMouseMove);
       }
+      window.removeEventListener('keydown', handleKeyDown);
       if (controlsTimeout) {
         clearTimeout(controlsTimeout);
       }
@@ -194,89 +271,75 @@ const VideoPlayer = () => {
     videoActions.setVolume(volume);
   };
 
-  // Format time (seconds to MM:SS)
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
     const secs = Math.floor(seconds % 60);
-    return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
+    return `${mins}:${secs.toString().padStart(2, '0')}`;
   };
 
-  // Handle file open
   const handleOpenFile = async () => {
     await videoActions.loadFile();
   };
 
-  // Handle drag and drop
+    // Handle drag and drop
   useEffect(() => {
-    const container = containerRef.current;
-    if (!container) return;
+    const handleDrop = (event: DragEvent) => {
+      event.preventDefault();
+      const files = event.dataTransfer?.files;
+      if (files && files.length > 0) {
+        const file = files[0];
 
-    const handleDragOver = (e: DragEvent) => {
-      e.preventDefault();
-      e.stopPropagation();
-      container.classList.add('drag-over');
-    };
+        try {
+          // Use the modern webUtils approach to get file path
+          const filePath = window.electronAPI.getFilePath(file);
 
-    const handleDragLeave = (e: DragEvent) => {
-      e.preventDefault();
-      e.stopPropagation();
-      container.classList.remove('drag-over');
-    };
-
-    const handleDrop = (e: DragEvent) => {
-      e.preventDefault();
-      e.stopPropagation();
-      container.classList.remove('drag-over');
-
-      if (e.dataTransfer?.files.length) {
-        const file = e.dataTransfer.files[0];
-        // In Electron, we need to access the path property differently
-        // @ts-ignore - path is available in Electron but not in standard File interface
-        const filePath = file.path;
-
-        if (!filePath) {
-          videoActions.setError('Cannot access file path. Try using the open file button instead.');
-          return;
-        }
-
-        // Check if it's a video file
-        const videoExtensions = ['mp4', 'webm', 'ogg', 'mkv', 'avi', 'mov', 'wmv', 'm4v'];
-        const fileExtension = filePath.split('.').pop()?.toLowerCase() || '';
-
-        if (videoExtensions.includes(fileExtension)) {
-          videoActions.loadFilePath(filePath);
-        } else {
-          videoActions.setError('Unsupported file format. Please select a video file.');
+          if (filePath) {
+            videoActions.loadFilePath(filePath);
+            // toast.success('File loaded via drag & drop');
+          }
+        } catch (error) {
+          console.error('Error getting file path:', error);
+          toast.error('Failed to load file via drag & drop');
         }
       }
     };
 
-    container.addEventListener('dragover', handleDragOver);
-    container.addEventListener('dragleave', handleDragLeave);
-    container.addEventListener('drop', handleDrop);
+    const handleDragOver = (event: DragEvent) => {
+      event.preventDefault();
+    };
+
+    window.addEventListener('drop', handleDrop);
+    window.addEventListener('dragover', handleDragOver);
 
     return () => {
-      container.removeEventListener('dragover', handleDragOver);
-      container.removeEventListener('dragleave', handleDragLeave);
-      container.removeEventListener('drop', handleDrop);
+      window.removeEventListener('drop', handleDrop);
+      window.removeEventListener('dragover', handleDragOver);
     };
   }, []);
 
   return (
     <div className="app-container">
-      <div className="title-bar">
-        <div className="window-controls">
-          <button onClick={() => window.electronAPI.minimizeWindow()} className="window-control minimize">—</button>
-          <button onClick={() => window.electronAPI.maximizeWindow()} className="window-control maximize">□</button>
-          <button onClick={() => window.electronAPI.closeWindow()} className="window-control close">×</button>
-        </div>
-        <div className="system-time">{new Date().toLocaleTimeString()}</div>
-        <div className="title">Electron Video Player</div>
-        <div className="settings-icon">
-          <button onClick={() => videoActions.toggleSettings()} className="control-button settings-button">
-            <FaCog />
-          </button>
-        </div>
+      <Toaster position="top-right" richColors theme='dark' offset={{ top: 30 }} />
+                  {/* Floating window controls - positioned based on platform */}
+      <div className={`floating-controls ${window.electronAPI.platform === 'darwin' ? 'macos' : 'windows'}`}>
+        {window.electronAPI.platform === 'darwin' ? (
+          // macOS controls on the left
+          <div className="window-controls">
+            {/* <button onClick={() => window.electronAPI.closeWindow()} className="window-control close">×</button>
+            <button onClick={() => window.electronAPI.minimizeWindow()} className="window-control minimize">—</button>
+            <button onClick={() => window.electronAPI.maximizeWindow()} className="window-control maximize">□</button> */}
+          </div>
+        ) : (
+          // Windows controls on the right
+          <div className="window-controls">
+            <button onClick={() => window.electronAPI.minimizeWindow()} className="window-control minimize">—</button>
+            <button onClick={() => window.electronAPI.maximizeWindow()} className="window-control maximize">□</button>
+            <button onClick={() => window.electronAPI.closeWindow()} className="window-control close">×</button>
+          </div>
+        )}
+
+        {/* Time display on the right */}
+        <div className="floating-time">{currentTime}</div>
       </div>
 
       <div ref={containerRef} className="video-container" onClick={() => videoActions.togglePlay()}>
@@ -307,9 +370,6 @@ const VideoPlayer = () => {
                   value={snap.progress}
                   onChange={handleSeekBarChange}
                 />
-                <div className="time-display">
-                  {formatTime(snap.currentTime)} / {formatTime(snap.duration)}
-                </div>
               </div>
 
               <div className="controls-row">
@@ -317,32 +377,31 @@ const VideoPlayer = () => {
                   <button onClick={() => videoActions.togglePlay()} className="control-button">
                     {snap.isPlaying ? <FaPause /> : <FaPlay />}
                   </button>
-                  <button onClick={() => videoActions.seekBackward(10)} className="control-button"><FaBackward /></button>
-                  <button onClick={() => videoActions.seekForward(10)} className="control-button"><FaForward /></button>
 
                   <div className="volume-control">
                     <button onClick={() => videoActions.toggleMute()} className="control-button">
                       {snap.isMuted ? <FaVolumeMute /> : snap.volume > 0.5 ? <FaVolumeUp /> : <FaVolumeDown />}
                     </button>
-                    <input
-                      type="range"
-                      ref={volumeBarRef}
-                      className="volume-bar"
-                      min="0"
-                      max="1"
-                      step="0.1"
-                      value={snap.isMuted ? 0 : snap.volume}
-                      onChange={handleVolumeBarChange}
-                    />
                   </div>
+
+                  <div className="time-display">
+                    {formatTime(snap.currentTime)} / {formatTime(snap.duration)}
+                  </div>
+
+                  {videoResolution && (
+                    <div className="resolution-badge">
+                      {videoResolution}
+                    </div>
+                  )}
                 </div>
 
-                <div className="right-controls">
-                  <div className="playback-rate">
-                    <span>{snap.playbackRate}x</span>
+                                <div className="right-controls">
+                  <div className="download-speed">
+                    <div className="speed-indicator">
+                      <div className="speed-dot"></div>
+                      1.2 MB/s
+                    </div>
                   </div>
-
-                  <button onClick={handleOpenFile} className="control-button"><FaFolder /></button>
 
                   {snap.subtitleTracks.length > 0 && (
                     <button
@@ -353,15 +412,8 @@ const VideoPlayer = () => {
                     </button>
                   )}
 
-                  {snap.airPlayAvailable && (
-                    <button
-                      onClick={() => videoActions.toggleSettings()}
-                      className={`control-button ${snap.isAirPlaying ? 'active' : ''}`}
-                    >
-                      <MdAirplay />
-                    </button>
-                  )}
-
+                  <button onClick={handleOpenFile} className="control-button"><FaFolder /></button>
+                  <button onClick={() => videoActions.toggleSettings()} className="control-button"><FaCog /></button>
                   <button onClick={() => videoActions.toggleFullScreen()} className="control-button"><FaExpand /></button>
                 </div>
               </div>
@@ -383,64 +435,7 @@ const VideoPlayer = () => {
           )}
         </AnimatePresence>
 
-        {/* Keymap Dialog */}
-        <AnimatePresence>
-          {snap.isKeymapDialogOpen && (
-            <motion.div
-              className="keymap-dialog"
-              initial={{ opacity: 0, y: -50 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -50 }}
-              transition={{ duration: 0.3 }}
-              onClick={(e) => e.stopPropagation()}
-            >
-              <div className="keymap-header">
-                <h3>Keyboard Shortcuts</h3>
-                <button onClick={() => videoActions.toggleKeymapDialog()} className="close-button"><FaTimes /></button>
-              </div>
 
-              <div className="keymap-content">
-                <table className="keymap-table">
-                  <thead>
-                    <tr>
-                      <th>Key</th>
-                      <th>Action</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {defaultKeymap.map((keymap, index) => (
-                      <tr key={index}>
-                        <td>
-                          {keymap.ctrlKey && 'Ctrl+'}
-                          {keymap.altKey && 'Alt+'}
-                          {keymap.shiftKey && 'Shift+'}
-                          {keymap.key === ' ' ? 'Space' : keymap.key}
-                        </td>
-                        <td>{keymap.description}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-
-        {/* Error Message */}
-        <AnimatePresence>
-          {snap.hasError && (
-            <motion.div
-              className="error-message"
-              initial={{ opacity: 0, y: -20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-              transition={{ duration: 0.2 }}
-            >
-              <p>{snap.errorMessage}</p>
-              <button onClick={() => videoActions.clearError()} className="close-button"><FaTimes /></button>
-            </motion.div>
-          )}
-        </AnimatePresence>
       </div>
     </div>
   );
