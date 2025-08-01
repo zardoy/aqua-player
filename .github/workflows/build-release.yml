@@ -41,6 +41,11 @@ jobs:
       env:
         GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
+    # list the files in the out/make directory
+    - name: List files in out/make
+      run: |
+        ls -la out/make/
+
     - name: Upload Windows artifacts
       uses: actions/upload-artifact@v4
       with:
