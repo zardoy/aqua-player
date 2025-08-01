@@ -17,19 +17,35 @@ jobs:
       with:
         node-version: '18'
 
+    - name: Setup pnpm
+      uses: pnpm/action-setup@v4
+
+    - name: Get pnpm store directory
+      shell: bash
+      run: |
+        echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_ENV
+
+    - name: Setup pnpm cache
+      uses: actions/cache@v4
+      with:
+        path: ${{ env.STORE_PATH }}
+        key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+        restore-keys: |
+          ${{ runner.os }}-pnpm-store-
+
     - name: Install dependencies
-      run: npm ci
+      run: pnpm install --frozen-lockfile
 
     - name: Build Windows executable
-      run: npm run make
+      run: pnpm run make
       env:
         GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
     - name: Upload Windows artifacts
       uses: actions/upload-artifact@v4
       with:
-        name: electron-videoplayer-windows
-        path: out/electron-videoplayer-win32-x64/
+        name: aqua-player-windows
+        path: out/aqua-player-win32-x64/
         retention-days: 30
 
   build-macos:
@@ -44,19 +60,35 @@ jobs:
       with:
         node-version: '18'
 
+    - name: Setup pnpm
+      uses: pnpm/action-setup@v4
+
+    - name: Get pnpm store directory
+      shell: bash
+      run: |
+        echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_ENV
+
+    - name: Setup pnpm cache
+      uses: actions/cache@v4
+      with:
+        path: ${{ env.STORE_PATH }}
+        key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+        restore-keys: |
+          ${{ runner.os }}-pnpm-store-
+
     - name: Install dependencies
-      run: npm ci
+      run: pnpm install --frozen-lockfile
 
     - name: Build macOS DMG
-      run: npm run make
+      run: pnpm run make
       env:
         GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
     - name: Upload macOS artifacts
       uses: actions/upload-artifact@v4
       with:
-        name: electron-videoplayer-macos
-        path: out/electron-videoplayer-darwin-x64/
+        name: aqua-player-macos
+        path: out/aqua-player-darwin-x64/
         retention-days: 30
 
   release:
@@ -71,13 +103,13 @@ jobs:
     - name: Download Windows artifacts
       uses: actions/download-artifact@v4
       with:
-        name: electron-videoplayer-windows
+        name: aqua-player-windows
         path: ./release-artifacts/windows/
 
     - name: Download macOS artifacts
       uses: actions/download-artifact@v4
       with:
-        name: electron-videoplayer-macos
+        name: aqua-player-macos
         path: ./release-artifacts/macos/
 
     - name: Get version from package.json
@@ -100,9 +132,9 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         tag_name: v${{ steps.package-version.outputs.version }}
-        release_name: Tap Water Player v${{ steps.package-version.outputs.version }}
+        release_name: Aqua Player v${{ steps.package-version.outputs.version }}
         body: |
-          🎬 **Tap Water Player**
+          🌊 **Aqua Player**
 
           A modern, feature-rich video player built with Electron.
 
@@ -111,11 +143,8 @@ jobs:
           - 🖱️ Drag & drop support
           - 🎛️ Custom protocol for secure file loading
           - 🎨 Modern UI with auto-hide controls
-          - ⚡ Auto-play functionality
-          - 🎵 Volume control with slider
           - 📱 Platform-specific window controls
           - 🎯 Customizable accent colors
-          - 🔄 Toast notifications
 
           **Downloads:**
           - Windows: See attached assets
@@ -139,8 +168,8 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: ./release-artifacts/windows/electron-videoplayer.exe
-        asset_name: electron-videoplayer-${{ steps.package-version.outputs.version }}-win32-x64.exe
+        asset_path: ./release-artifacts/windows/aqua-player.exe
+        asset_name: aqua-player-${{ steps.package-version.outputs.version }}-win32-x64.exe
         asset_content_type: application/octet-stream
 
     - name: Upload macOS Release Asset
@@ -149,6 +178,6 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: ./release-artifacts/macos/electron-videoplayer.dmg
-        asset_name: electron-videoplayer-${{ steps.package-version.outputs.version }}-darwin-x64.dmg
+        asset_path: ./release-artifacts/macos/aqua-player.dmg
+        asset_name: aqua-player-${{ steps.package-version.outputs.version }}-darwin-x64.dmg
         asset_content_type: application/octet-stream

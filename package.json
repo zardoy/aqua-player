@@ -1,6 +1,6 @@
 {
-  "name": "tap-water-player",
-  "productName": "tap-water-player",
+  "name": "aqua-player",
+  "productName": "Aqua Player",
   "version": "1.0.0",
   "description": "My Electron application description",
   "main": ".webpack/main",
