@@ -41,11 +41,11 @@ jobs:
       env:
         GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-    # list the files in the out/make directory
-    - name: List files in out/make
+    # list the files in the out directory recursively
+    - name: List files in out directory
       shell: powershell
       run: |
-        Get-ChildItem -Path "out\make\" -Force
+        Get-ChildItem -Path "out\" -Recurse -Force
 
     - name: Upload Windows artifacts
       uses: actions/upload-artifact@v4
