@@ -168,7 +168,8 @@ jobs:
           - macOS: See attached assets
 
           **Installation:**
-          Download the appropriate file for your platform and run the installer.
+          - Download the appropriate file for your platform and run the installer.
+          - On macOS run `xattr -cr "/Applications/Aqua Player.app"` to fix "This app is damaged and can't be opened. You should move it to the Bin." error.
 
           **Usage:**
           - Drag and drop video files onto the player
@@ -196,5 +197,5 @@ jobs:
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
         asset_path: ${{ env.MAC_FILE }}
-        asset_name: aqua-player-${{ steps.package-version.outputs.version }}-darwin-x64.dmg
+        asset_name: aqua-player-${{ steps.package-version.outputs.version }}-darwin-arm64.dmg
         asset_content_type: application/octet-stream
