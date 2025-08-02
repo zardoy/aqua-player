@@ -19,7 +19,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
 
   // Media features
   checkAirPlayAvailability: () => ipcRenderer.invoke('check-airplay-availability'),
-  startAirPlay: (deviceName: string) => ipcRenderer.invoke('start-airplay', deviceName),
+  startAirPlay: (deviceName: string, videoPath: string) => ipcRenderer.invoke('start-airplay', deviceName, videoPath),
   stopAirPlay: () => ipcRenderer.invoke('stop-airplay'),
   getAirPlayDevices: () => ipcRenderer.invoke('get-airplay-devices'),
 

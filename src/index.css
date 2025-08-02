@@ -593,3 +593,93 @@ body {
   border: 2px dashed #00aaff;
   background-color: rgba(0, 170, 255, 0.1);
 }
+
+/* Broadcast Dialog */
+.broadcast-panel {
+  max-width: 400px;
+  width: 100%;
+}
+
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.refresh-button {
+  background: none;
+  border: none;
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 18px;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+}
+
+.refresh-button:hover {
+  color: var(--accent-color);
+  background-color: rgba(0, 170, 255, 0.1);
+}
+
+.refresh-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.spinning {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.device-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.device-list button {
+  background: rgba(255, 255, 255, 0.1);
+  border: none;
+  color: white;
+  padding: 0.75rem 1rem;
+  border-radius: 4px;
+  cursor: pointer;
+  text-align: left;
+  transition: all 0.2s ease;
+}
+
+.device-list button:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.device-list button.active {
+  background: var(--accent-color);
+}
+
+.no-devices {
+  color: rgba(255, 255, 255, 0.6);
+  text-align: center;
+  padding: 1rem;
+}
+
+.stop-button {
+  background: #ff4444;
+  border: none;
+  color: white;
+  padding: 0.75rem 1rem;
+  border-radius: 4px;
+  cursor: pointer;
+  width: 100%;
+  margin-top: 1rem;
+  transition: all 0.2s ease;
+}
+
+.stop-button:hover {
+  background: #ff2222;
+}

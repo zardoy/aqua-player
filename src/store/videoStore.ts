@@ -1,4 +1,6 @@
 import { proxy } from 'valtio';
+import { settingsState } from './settingsStore';
+import { toast } from 'sonner';
 
 type VideoTrack = {
   id: string;
@@ -72,6 +74,12 @@ export const videoState = proxy({
   // Error handling
   hasError: false,
   errorMessage: '',
+
+  // Broadcast state
+  isBroadcasting: false,
+  broadcastDevices: [] as string[],
+  currentBroadcastDevice: null as string | null,
+  isScanningDevices: false,
 });
 
 export const videoActions = {
@@ -303,6 +311,50 @@ export const videoActions = {
     }
   },
 
+  // Broadcast actions
+  scanBroadcastDevices: async () => {
+    try {
+      videoState.isScanningDevices = true;
+      if (settingsState.broadcast.allowAirPlay) {
+        const devices = await window.electronAPI.getAirPlayDevices();
+        videoState.broadcastDevices = devices;
+      }
+    } catch (error) {
+      console.error('Failed to scan broadcast devices:', error);
+      toast.error('Failed to scan broadcast devices');
+    } finally {
+      videoState.isScanningDevices = false;
+    }
+  },
+
+  startBroadcast: async (deviceName: string) => {
+    try {
+      if (settingsState.broadcast.allowAirPlay && videoState.currentFile) {
+        await window.electronAPI.startAirPlay(deviceName, videoState.currentFile);
+        videoState.isBroadcasting = true;
+        videoState.currentBroadcastDevice = deviceName;
+        toast.success(`Broadcasting to ${deviceName}`);
+      }
+    } catch (error) {
+      console.error('Failed to start broadcast:', error);
+      toast.error('Failed to start broadcast');
+    }
+  },
+
+  stopBroadcast: async () => {
+    try {
+      if (settingsState.broadcast.allowAirPlay) {
+        await window.electronAPI.stopAirPlay();
+      }
+      videoState.isBroadcasting = false;
+      videoState.currentBroadcastDevice = null;
+      toast.success('Broadcast stopped');
+    } catch (error) {
+      console.error('Failed to stop broadcast:', error);
+      toast.error('Failed to stop broadcast');
+    }
+  },
+
   // UI controls
   toggleControls: () => {
     videoState.showControls = !videoState.showControls;
@@ -359,7 +411,7 @@ declare global {
       closeWindow: () => void;
       toggleFullscreen: () => void;
       checkAirPlayAvailability: () => Promise<boolean>;
-      startAirPlay: (deviceName: string) => Promise<void>;
+      startAirPlay: (deviceName: string, videoPath: string) => Promise<void>;
       stopAirPlay: () => Promise<void>;
       getAirPlayDevices: () => Promise<string[]>;
       startRemoteServer: () => Promise<string>;
