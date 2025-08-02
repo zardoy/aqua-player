@@ -367,6 +367,10 @@ declare global {
       getRemotePlaybackUrl: () => Promise<string>;
       loadSettings: () => Promise<any>;
       saveSettings: (settings: any) => Promise<boolean>;
+      startWindowDrag: (mouseX: number, mouseY: number) => void;
+      moveWindow: (mouseX: number, mouseY: number, startBounds: any, startMouseX: number, startMouseY: number) => void;
+      on: (channel: string, callback: (...args: any[]) => void) => void;
+      off: (channel: string, callback: (...args: any[]) => void) => void;
     };
   }
 }

@@ -291,6 +291,63 @@ const VideoPlayer = () => {
     await videoActions.loadFile();
   };
 
+  // Handle window dragging
+  useEffect(() => {
+    const container = containerRef.current;
+    if (!container) return;
+
+    let isDragging = false;
+    let startBounds: any = null;
+    let startMouseX = 0;
+    let startMouseY = 0;
+
+    const handleMouseDown = (e: MouseEvent) => {
+      // Only start dragging if clicking directly on the container (not on controls)
+      if (e.target === container) {
+        isDragging = true;
+        startMouseX = e.screenX;
+        startMouseY = e.screenY;
+        window.electronAPI.startWindowDrag(e.screenX, e.screenY);
+      }
+    };
+
+    const handleMouseMove = (e: MouseEvent) => {
+      if (!isDragging || !startBounds) return;
+
+      if (e.screenX === startMouseX && e.screenY === startMouseY) return;
+
+      window.electronAPI.moveWindow(
+        e.screenX,
+        e.screenY,
+        startBounds,
+        startMouseX,
+        startMouseY
+      );
+    };
+
+    const handleMouseUp = () => {
+      isDragging = false;
+      startBounds = null;
+    };
+
+    // Listen for the drag enabled event from main process
+    const handleDragEnabled = (event: any, data: any) => {
+      startBounds = data.startBounds;
+    };
+
+    window.electronAPI.on('window-drag-enabled', handleDragEnabled);
+    container.addEventListener('mousedown', handleMouseDown);
+    window.addEventListener('mousemove', handleMouseMove);
+    window.addEventListener('mouseup', handleMouseUp);
+
+    return () => {
+      window.electronAPI.off('window-drag-enabled', handleDragEnabled);
+      container.removeEventListener('mousedown', handleMouseDown);
+      window.removeEventListener('mousemove', handleMouseMove);
+      window.removeEventListener('mouseup', handleMouseUp);
+    };
+  }, []);
+
     // Handle drag and drop
   useEffect(() => {
     const handleDrop = (event: DragEvent) => {
