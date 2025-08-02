@@ -15,16 +15,19 @@ import { rendererConfig } from './webpack.renderer.config';
 const config: ForgeConfig = {
   packagerConfig: {
     asar: true,
-    icon: './icon.png',
+    icon: './icon',
   },
   rebuildConfig: {},
   makers: [
     new MakerSquirrel({
       name: 'aqua-player',
+      setupIcon: './icon.ico',
+      iconUrl: 'https://url/to/icon.ico',
     }),
     // new MakerZIP({}, ['darwin']),
     new MakerDMG({
       name: 'aqua-player',
+      icon: './icon.icns',
     }),
     // new MakerRpm({}),
     // new MakerDeb({})
