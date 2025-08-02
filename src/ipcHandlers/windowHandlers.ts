@@ -1,6 +1,10 @@
 import { BrowserWindow, ipcMain } from 'electron';
 
 export function setupWindowHandlers(mainWindow: BrowserWindow) {
+  // Set initial progress state
+  if (process.platform === 'win32') {
+    mainWindow.setProgressBar(-1);
+  }
   // Window controls
   ipcMain.on('minimize-window', () => {
     mainWindow?.minimize();
@@ -34,7 +38,7 @@ export function setupWindowHandlers(mainWindow: BrowserWindow) {
     });
   });
 
-  ipcMain.on('window-drag-move', (event, { mouseX, mouseY, startBounds, startMouseX, startMouseY }) => {
+    ipcMain.on('window-drag-move', (event, { mouseX, mouseY, startBounds, startMouseX, startMouseY }) => {
     if (!mainWindow) return;
 
     const deltaX = mouseX - startMouseX;
@@ -46,5 +50,24 @@ export function setupWindowHandlers(mainWindow: BrowserWindow) {
       width: startBounds.width,
       height: startBounds.height
     });
+  });
+
+  // Handle window title updates
+  ipcMain.on('update-window-title', (event, title: string) => {
+    if (!mainWindow) return;
+    mainWindow.setTitle(title || 'Aqua Player');
+  });
+
+  // Handle progress bar updates (Windows only)
+  ipcMain.on('update-progress-bar', (event, { isPlaying, progress }: { isPlaying: boolean; progress: number }) => {
+    if (!mainWindow || process.platform !== 'win32') return;
+
+    if (!isPlaying) {
+      // Yellow progress when paused
+      mainWindow.setProgressBar(progress, { mode: 'paused' });
+    } else {
+      // Green progress when playing
+      mainWindow.setProgressBar(progress, { mode: 'normal' });
+    }
   });
 }

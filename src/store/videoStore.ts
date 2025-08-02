@@ -371,6 +371,8 @@ declare global {
       moveWindow: (mouseX: number, mouseY: number, startBounds: any, startMouseX: number, startMouseY: number) => void;
       on: (channel: string, callback: (...args: any[]) => void) => void;
       off: (channel: string, callback: (...args: any[]) => void) => void;
+      setWindowTitle: (title: string) => void;
+      setProgressBar: (isPlaying: boolean, progress: number) => void;
     };
   }
 }

@@ -78,7 +78,10 @@ const VideoPlayer = () => {
     } else if (!snap.isPlaying && !video.paused) {
       video.pause();
     }
-  }, [snap.isPlaying]);
+
+    // Update progress bar on Windows
+    window.electronAPI.setProgressBar(snap.isPlaying, snap.progress);
+  }, [snap.isPlaying, snap.progress]);
 
   // Handle volume changes
   useEffect(() => {
@@ -114,6 +117,10 @@ const VideoPlayer = () => {
     if (!video || !snap.currentFile) return;
 
     try {
+      // Set window title with full filename
+      const fileName = snap.currentFile.split(/[/\\]/).pop() || '';
+      window.electronAPI.setWindowTitle(fileName);
+
       // Use custom protocol for local files to avoid CSP issues
       const fileUrl = snap.currentFile.startsWith('local-file://') ? snap.currentFile : `file://${snap.currentFile}`;
       video.src = fileUrl;

@@ -32,10 +32,15 @@ contextBridge.exposeInMainWorld('electronAPI', {
   loadSettings: () => ipcRenderer.invoke('load-settings'),
   saveSettings: (settings: any) => ipcRenderer.invoke('save-settings', settings),
 
-    // Window dragging
+      // Window dragging
   startWindowDrag: (mouseX: number, mouseY: number) => ipcRenderer.send('window-drag-start', { mouseX, mouseY }),
   moveWindow: (mouseX: number, mouseY: number, startBounds: any, startMouseX: number, startMouseY: number) =>
     ipcRenderer.send('window-drag-move', { mouseX, mouseY, startBounds, startMouseX, startMouseY }),
   on: (channel: string, callback: (...args: any[]) => void) => ipcRenderer.on(channel, callback),
   off: (channel: string, callback: (...args: any[]) => void) => ipcRenderer.removeListener(channel, callback),
+
+  // Window title and progress
+  setWindowTitle: (title: string) => ipcRenderer.send('update-window-title', title),
+  setProgressBar: (isPlaying: boolean, progress: number) =>
+    ipcRenderer.send('update-progress-bar', { isPlaying, progress }),
 });
