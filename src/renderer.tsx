@@ -15,6 +15,8 @@ const VideoPlayer = () => {
   const seekBarRef = useRef<HTMLInputElement>(null);
   const volumeBarRef = useRef<HTMLInputElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
+  const lastDragEndRef = useRef<number>(0);
+
   const [showControls, setShowControls] = useState(true);
   const [controlsTimeout, setControlsTimeout] = useState<NodeJS.Timeout | null>(null);
   const [currentTime, setCurrentTime] = useState(new Date().toLocaleTimeString());
@@ -304,6 +306,7 @@ const VideoPlayer = () => {
     if (!container) return;
 
     let isDragging = false;
+    let dragged = false
     let startBounds: any = null;
     let startMouseX = 0;
     let startMouseY = 0;
@@ -323,6 +326,7 @@ const VideoPlayer = () => {
 
       if (e.screenX === startMouseX && e.screenY === startMouseY) return;
 
+      dragged = true
       window.electronAPI.moveWindow(
         e.screenX,
         e.screenY,
@@ -333,6 +337,10 @@ const VideoPlayer = () => {
     };
 
     const handleMouseUp = () => {
+      if (dragged) {
+        lastDragEndRef.current = Date.now();
+      }
+      dragged = false
       isDragging = false;
       startBounds = null;
     };
@@ -399,7 +407,20 @@ const VideoPlayer = () => {
         <div className="floating-time">{currentTime}</div>
       </div>
 
-      <div ref={containerRef} className="video-container" onClick={() => videoActions.togglePlay()}>
+      <div
+        ref={containerRef}
+        className="video-container"
+        onClick={() => {
+          if (Date.now() - lastDragEndRef.current > 50) {
+            videoActions.togglePlay();
+          }
+        }}
+        onDoubleClick={() => {
+          if (Date.now() - lastDragEndRef.current > 50) {
+            videoActions.toggleFullScreen()
+          }
+        }}
+      >
         <video
           ref={videoRef}
           className="video-player"

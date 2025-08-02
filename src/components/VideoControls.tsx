@@ -58,18 +58,24 @@ const VideoControls: React.FC<VideoControlsProps> = ({
 
   const getDisplayTitle = () => {
     if (!snap.currentFile) return '';
-
-    // Handle both forward and backward slashes
     const fileName = snap.currentFile.split(/[/\\]/).slice(-1)[0] || '';
-    return fileName.replace(/\.[^/.]+$/, ''); // Remove file extension
+    return fileName.replace(/\.[^/.]+$/, '');
   };
 
   const getFullPath = () => {
     if (!snap.currentFile) return '';
-
-    // Normalize path separators for display
     return snap.currentFile.replace(/\\/g, '/');
   };
+
+  useEffect(() => {
+    // Update volume bar color
+    const volumeBar = volumeBarRef.current;
+    if (volumeBar) {
+      const volume = snap.isMuted ? 0 : snap.volume;
+      const percentage = (volume * 100) + '%';
+      volumeBar.style.setProperty('--volume-progress', percentage);
+    }
+  }, [snap.isMuted, snap.volume]);
 
   return (
     <AnimatePresence>
@@ -81,6 +87,7 @@ const VideoControls: React.FC<VideoControlsProps> = ({
           exit={{ opacity: 0, y: 20 }}
           transition={{ duration: 0.2 }}
           onClick={(e) => e.stopPropagation()}
+          tabIndex={-1}
         >
           <div className="progress-container">
             <input
@@ -92,17 +99,26 @@ const VideoControls: React.FC<VideoControlsProps> = ({
               step="0.001"
               value={snap.progress}
               onChange={onSeekBarChange}
+              tabIndex={-1}
             />
           </div>
 
           <div className="controls-row">
             <div className="left-controls">
-              <button onClick={() => videoActions.togglePlay()} className="control-button">
+              <button
+                onClick={() => videoActions.togglePlay()}
+                className="control-button"
+                tabIndex={-1}
+              >
                 {snap.isPlaying ? <FaPause /> : <FaPlay />}
               </button>
 
               <div className="volume-control">
-                <button onClick={() => videoActions.toggleMute()} className="control-button">
+                <button
+                  onClick={() => videoActions.toggleMute()}
+                  className="control-button"
+                  tabIndex={-1}
+                >
                   {snap.isMuted ? <FaVolumeMute /> : snap.volume > 0.5 ? <FaVolumeUp /> : <FaVolumeDown />}
                 </button>
                 <input
@@ -114,6 +130,7 @@ const VideoControls: React.FC<VideoControlsProps> = ({
                   step="0.1"
                   value={snap.isMuted ? 0 : snap.volume}
                   onChange={onVolumeBarChange}
+                  tabIndex={-1}
                 />
               </div>
 
@@ -127,6 +144,7 @@ const VideoControls: React.FC<VideoControlsProps> = ({
                   title={getFullPath()}
                   onClick={handleTitleClick}
                   style={{ cursor: 'pointer' }}
+                  tabIndex={-1}
                 >
                   {getDisplayTitle()}
                 </div>
@@ -151,14 +169,15 @@ const VideoControls: React.FC<VideoControlsProps> = ({
                 <button
                   onClick={() => videoActions.toggleSubtitles()}
                   className={`control-button ${snap.showSubtitles ? 'active' : ''}`}
+                  tabIndex={-1}
                 >
                   <MdSubtitles />
                 </button>
               )}
 
-              <button onClick={onOpenFile} className="control-button"><FaFolder /></button>
-              <button onClick={() => videoActions.toggleSettings()} className="control-button"><FaCog /></button>
-              <button onClick={() => videoActions.toggleFullScreen()} className="control-button"><FaExpand /></button>
+              <button onClick={onOpenFile} className="control-button" tabIndex={-1}><FaFolder /></button>
+              <button onClick={() => videoActions.toggleSettings()} className="control-button" tabIndex={-1}><FaCog /></button>
+              <button onClick={() => videoActions.toggleFullScreen()} className="control-button" tabIndex={-1}><FaExpand /></button>
             </div>
           </div>
         </motion.div>

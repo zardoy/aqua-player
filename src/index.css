@@ -283,6 +283,18 @@ body {
   margin: 0 5px;
 }
 
+.volume-bar::-webkit-slider-runnable-track {
+  -webkit-appearance: none;
+  height: 4px;
+  border-radius: 4px;
+}
+
+.volume-bar::-moz-range-track {
+  height: 4px;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.2);
+}
+
 .volume-bar::-webkit-slider-thumb {
   -webkit-appearance: none;
   appearance: none;
@@ -291,6 +303,7 @@ body {
   background: var(--accent-color);
   cursor: pointer;
   border-radius: 50%;
+  margin-top: -3px;
 }
 
 .volume-bar::-moz-range-thumb {
@@ -299,6 +312,12 @@ body {
   background: var(--accent-color);
   cursor: pointer;
   border-radius: 50%;
+  border: none;
+}
+
+/* Add dynamic background for volume bar */
+.volume-bar {
+  background: linear-gradient(to right, var(--accent-color) 0%, var(--accent-color) var(--volume-progress, 0%), rgba(255, 255, 255, 0.2) var(--volume-progress, 0%));
 }
 
 .playback-rate {
