@@ -4,7 +4,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useSnapshot } from 'valtio';
 import { FaTimes } from 'react-icons/fa';
 import './index.css';
-import { videoState, videoActions, defaultKeymap } from './store/videoStore';
+import { videoState, videoActions } from './store/videoStore';
+import { setupKeymap } from './client/appKeymap';
 import SettingsPanel from './components/SettingsPanel';
 import KeymapDialog from './components/KeymapDialog';
 import VideoControls from './components/VideoControls';
@@ -19,7 +20,7 @@ const VideoPlayer = () => {
 
   const [showControls, setShowControls] = useState(true);
   const [controlsTimeout, setControlsTimeout] = useState<NodeJS.Timeout | null>(null);
-  const [currentTime, setCurrentTime] = useState(new Date().toLocaleTimeString());
+  const [currentTime, setCurrentTime] = useState('');
 
   const snap = useSnapshot(videoState);
 
@@ -166,30 +167,9 @@ const VideoPlayer = () => {
     }
   }, [snap.currentFile]);
 
-  // Handle keymap
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      // Don't handle keys if an input element is focused
-      if (document.activeElement?.tagName === 'INPUT') return;
-
-      for (const keyAction of defaultKeymap) {
-        if (keyAction.key === e.key &&
-            (!keyAction.shiftKey || e.shiftKey) &&
-            (!keyAction.ctrlKey || e.ctrlKey) &&
-            (!keyAction.altKey || e.altKey)) {
-          e.preventDefault();
-          keyAction.action();
-          break;
-        }
-      }
-    };
-
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, []);
-
   // Update system time every second
   useEffect(() => {
+    setCurrentTime(new Intl.DateTimeFormat(undefined, { hour: '2-digit', minute: '2-digit' }).format(new Date()));
     const timer = setInterval(() => {
       setCurrentTime(new Intl.DateTimeFormat(undefined, { hour: '2-digit', minute: '2-digit' }).format(new Date()));
     }, 1000);
@@ -223,8 +203,6 @@ const VideoPlayer = () => {
       }
 
       setShowControls(true);
-      // Show cursor when UI is shown
-      document.body.style.cursor = 'default';
 
       if (controlsTimeout) {
         clearTimeout(controlsTimeout);
@@ -233,8 +211,6 @@ const VideoPlayer = () => {
       const timeout = setTimeout(() => {
         if (snap.isPlaying && !isForceHidden) {
           setShowControls(false);
-          // Hide cursor when UI is hidden
-          document.body.style.cursor = 'none';
         }
       }, 3000);
 
@@ -408,6 +384,7 @@ const VideoPlayer = () => {
       </div>
 
       <div
+        style={{ cursor: showControls ? 'default' : 'none' }}
         ref={containerRef}
         className="video-container"
         onClick={() => {
@@ -415,7 +392,8 @@ const VideoPlayer = () => {
             videoActions.togglePlay();
           }
         }}
-        onDoubleClick={() => {
+        onDoubleClick={(e) => {
+          if (e.target !== e.currentTarget) return;
           if (Date.now() - lastDragEndRef.current > 50) {
             videoActions.toggleFullScreen()
           }

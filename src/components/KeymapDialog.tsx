@@ -2,7 +2,8 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { FaTimes } from 'react-icons/fa';
 import { useSnapshot } from 'valtio';
-import { videoState, defaultKeymap } from '../store/videoStore';
+import { videoState } from '../store/videoStore';
+import { defaultKeymap } from '../client/appKeymap';
 
 type KeymapDialogProps = {
   onClose: () => void;
@@ -12,7 +13,7 @@ const KeymapDialog: React.FC<KeymapDialogProps> = ({ onClose }) => {
   const snap = useSnapshot(videoState);
 
   return (
-    <motion.div 
+    <motion.div
       className="keymap-dialog"
       initial={{ opacity: 0, y: -50 }}
       animate={{ opacity: 1, y: 0 }}
@@ -24,7 +25,7 @@ const KeymapDialog: React.FC<KeymapDialogProps> = ({ onClose }) => {
         <h3>Keyboard Shortcuts</h3>
         <button onClick={onClose} className="close-button"><FaTimes /></button>
       </div>
-      
+
       <div className="keymap-content">
         <table className="keymap-table">
           <thead>
@@ -40,7 +41,7 @@ const KeymapDialog: React.FC<KeymapDialogProps> = ({ onClose }) => {
                   {keymap.ctrlKey && 'Ctrl+'}
                   {keymap.altKey && 'Alt+'}
                   {keymap.shiftKey && 'Shift+'}
-                  {keymap.key === ' ' ? 'Space' : keymap.key}
+                  {keymap.code}
                 </td>
                 <td>{keymap.description}</td>
               </tr>

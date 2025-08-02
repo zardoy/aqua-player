@@ -21,15 +21,6 @@ type AudioTrack = {
   language: string;
 };
 
-type KeymapAction = {
-  key: string;
-  description: string;
-  action: () => void;
-  shiftKey?: boolean;
-  ctrlKey?: boolean;
-  altKey?: boolean;
-};
-
 export const videoState = proxy({
   // Playback state
   isPlaying: false,
@@ -324,27 +315,6 @@ export const videoActions = {
     videoState.errorMessage = message;
   }
 };
-
-// Define the default keymap
-export const defaultKeymap: KeymapAction[] = [
-  { key: ' ', description: 'Play/Pause', action: videoActions.togglePlay },
-  { key: 'ArrowRight', description: 'Seek forward 10s', action: () => videoActions.seekForward(10) },
-  { key: 'ArrowLeft', description: 'Seek backward 10s', action: () => videoActions.seekBackward(10) },
-  { key: 'ArrowUp', description: 'Increase volume', action: () => videoActions.increaseVolume(0.1) },
-  { key: 'ArrowDown', description: 'Decrease volume', action: () => videoActions.decreaseVolume(0.1) },
-  { key: 'm', description: 'Mute/Unmute', action: videoActions.toggleMute },
-  { key: 'f', description: 'Toggle fullscreen', action: videoActions.toggleFullScreen },
-  { key: '.', description: 'Next frame', action: videoActions.nextFrame, shiftKey: true },
-  { key: ',', description: 'Previous frame', action: videoActions.previousFrame, shiftKey: true },
-  { key: 'v', description: 'Toggle subtitles', action: videoActions.toggleSubtitles },
-  { key: 'a', description: 'Next audio track', action: videoActions.nextAudioTrack },
-  { key: 'a', description: 'Previous audio track', action: videoActions.previousAudioTrack, shiftKey: true },
-  { key: '/', description: 'Show keymap', action: videoActions.toggleKeymapDialog, shiftKey: true },
-  { key: '+', description: 'Increase playback rate', action: videoActions.increasePlaybackRate },
-  { key: '-', description: 'Decrease playback rate', action: videoActions.decreasePlaybackRate },
-  { key: '0', description: 'Reset playback rate', action: videoActions.resetPlaybackRate },
-  { key: 'o', description: 'Open file', action: videoActions.loadFile },
-];
 
 // Add TypeScript interface for the window.electronAPI
 declare global {
