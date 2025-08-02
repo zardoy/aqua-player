@@ -5,11 +5,12 @@ import { useSnapshot } from 'valtio';
 import { FaTimes } from 'react-icons/fa';
 import './index.css';
 import { videoState, videoActions } from './store/videoStore';
-import { setupKeymap } from './client/appKeymap';
+import { settingsState, settingsActions } from './store/settingsStore';
 import SettingsPanel from './components/SettingsPanel';
 import KeymapDialog from './components/KeymapDialog';
 import VideoControls from './components/VideoControls';
 import { Toaster, toast } from 'sonner';
+import { ErrorBoundary } from './components/ErrorBoundary';
 
 const VideoPlayer = () => {
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -375,68 +376,77 @@ const VideoPlayer = () => {
     };
   }, []);
 
+  // Load settings on mount
+  useEffect(() => {
+    settingsActions.loadSettings();
+  }, []);
+
   return (
-    <div className="app-container">
-      <Toaster position="top-right" richColors theme='dark' offset={{ top: 30 }} />
-                  {/* Floating window controls - positioned based on platform */}
-      <div className={`floating-time-container ${window.electronAPI.platform === 'win32' ? 'windows' : ''}`}>
-        <div className="floating-time">{currentTime}</div>
+    <ErrorBoundary>
+      <div className="app-container">
+        <Toaster position="top-right" richColors theme='dark' offset={{ top: 30 }} />
+        <div className={`floating-time-container ${window.electronAPI.platform === 'win32' ? 'windows' : ''}`}>
+          <div className="floating-time">{currentTime}</div>
+        </div>
+
+        <div
+          style={{ cursor: showControls ? 'default' : 'none' }}
+          ref={containerRef}
+          className="video-container"
+          onClick={(e) => {
+            if (e.target !== e.currentTarget) return;
+            if (Date.now() - lastDragEndRef.current > 50) {
+              videoActions.togglePlay();
+            }
+          }}
+          onDoubleClick={(e) => {
+            if (e.target !== e.currentTarget) return;
+            if (Date.now() - lastDragEndRef.current > 50) {
+              videoActions.toggleFullScreen()
+            }
+          }}
+        >
+          <video
+            ref={videoRef}
+            className="video-player"
+            onClick={(e) => e.stopPropagation()}
+          />
+
+          <VideoControls
+            showControls={showControls}
+            onSeekBarChange={handleSeekBarChange}
+            onVolumeBarChange={handleVolumeBarChange}
+            onOpenFile={handleOpenFile}
+            seekBarRef={seekBarRef}
+            volumeBarRef={volumeBarRef}
+            videoRef={videoRef}
+          />
+
+          {/* Settings Panel */}
+          <AnimatePresence>
+            {snap.isSettingsOpen && (
+              <SettingsPanel onClose={() => videoActions.toggleSettings()} />
+            )}
+          </AnimatePresence>
+
+          {/* Keymap Dialog */}
+          <AnimatePresence>
+            {snap.isKeymapDialogOpen && (
+              <KeymapDialog onClose={() => videoActions.toggleKeymapDialog()} />
+            )}
+          </AnimatePresence>
+        </div>
       </div>
-
-      <div
-        style={{ cursor: showControls ? 'default' : 'none' }}
-        ref={containerRef}
-        className="video-container"
-        onClick={() => {
-          if (Date.now() - lastDragEndRef.current > 50) {
-            videoActions.togglePlay();
-          }
-        }}
-        onDoubleClick={(e) => {
-          if (e.target !== e.currentTarget) return;
-          if (Date.now() - lastDragEndRef.current > 50) {
-            videoActions.toggleFullScreen()
-          }
-        }}
-      >
-        <video
-          ref={videoRef}
-          className="video-player"
-          onClick={(e) => e.stopPropagation()}
-        />
-
-        <VideoControls
-          showControls={showControls}
-          onSeekBarChange={handleSeekBarChange}
-          onVolumeBarChange={handleVolumeBarChange}
-          onOpenFile={handleOpenFile}
-          seekBarRef={seekBarRef}
-          volumeBarRef={volumeBarRef}
-          videoRef={videoRef}
-        />
-
-        {/* Settings Panel */}
-        <AnimatePresence>
-          {snap.isSettingsOpen && (
-            <SettingsPanel onClose={() => videoActions.toggleSettings()} />
-          )}
-        </AnimatePresence>
-
-        {/* Keymap Dialog */}
-        <AnimatePresence>
-          {snap.isKeymapDialogOpen && (
-            <KeymapDialog onClose={() => videoActions.toggleKeymapDialog()} />
-          )}
-        </AnimatePresence>
-
-
-      </div>
-    </div>
+    </ErrorBoundary>
   );
 };
 
 const App = () => {
-  return <VideoPlayer />;
+  return (
+    <ErrorBoundary>
+      <VideoPlayer />
+    </ErrorBoundary>
+  );
 };
 
 const container = document.getElementById('root');

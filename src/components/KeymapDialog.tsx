@@ -1,54 +1,69 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { FaTimes } from 'react-icons/fa';
-import { useSnapshot } from 'valtio';
-import { videoState } from '../store/videoStore';
 import { defaultKeymap } from '../client/appKeymap';
 
-type KeymapDialogProps = {
+interface KeymapDialogProps {
   onClose: () => void;
-};
+}
 
 const KeymapDialog: React.FC<KeymapDialogProps> = ({ onClose }) => {
-  const snap = useSnapshot(videoState);
+  const formatKey = (keyAction: typeof defaultKeymap[0]) => {
+    const parts = [];
+    if (keyAction.metaKey) parts.push('⌘');
+    if (keyAction.ctrlKey) parts.push('Ctrl');
+    if (keyAction.altKey) parts.push('Alt');
+    if (keyAction.shiftKey) parts.push('⇧');
+
+    const mainKey = keyAction.code
+      .replace('Key', '')
+      .replace('Digit', '')
+      .replace('Arrow', 'Arrow ');
+
+    parts.push(mainKey);
+    return parts.join(' + ');
+  };
 
   return (
     <motion.div
-      className="keymap-dialog"
-      initial={{ opacity: 0, y: -50 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: -50 }}
-      transition={{ duration: 0.3 }}
-      onClick={(e) => e.stopPropagation()}
+      className="settings-overlay"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      onClick={onClose}
     >
-      <div className="keymap-header">
-        <h3>Keyboard Shortcuts</h3>
-        <button onClick={onClose} className="close-button"><FaTimes /></button>
-      </div>
-
-      <div className="keymap-content">
-        <table className="keymap-table">
-          <thead>
-            <tr>
-              <th>Key</th>
-              <th>Action</th>
-            </tr>
-          </thead>
-          <tbody>
-            {defaultKeymap.map((keymap, index) => (
-              <tr key={index}>
-                <td>
-                  {keymap.ctrlKey && 'Ctrl+'}
-                  {keymap.altKey && 'Alt+'}
-                  {keymap.shiftKey && 'Shift+'}
-                  {keymap.code}
-                </td>
-                <td>{keymap.description}</td>
+      <motion.div
+        className="settings-panel"
+        initial={{ scale: 0.95, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        exit={{ scale: 0.95, opacity: 0 }}
+        onClick={e => e.stopPropagation()}
+      >
+        <div className="settings-header">
+          <h3>Keyboard Shortcuts</h3>
+          <button onClick={onClose} className="close-button">
+            <FaTimes />
+          </button>
+        </div>
+        <div className="settings-content">
+          <table className="keymap-table">
+            <thead>
+              <tr>
+                <th>Shortcut</th>
+                <th>Action</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+            </thead>
+            <tbody>
+              {defaultKeymap.map((keyAction, index) => (
+                <tr key={index}>
+                  <td>{formatKey(keyAction)}</td>
+                  <td>{keyAction.description}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </motion.div>
     </motion.div>
   );
 };
