@@ -36,7 +36,7 @@ const VideoControls: React.FC<VideoControlsProps> = ({
       const videoWidth = video.videoWidth;
       const videoHeight = video.videoHeight;
       if (videoWidth && videoHeight) {
-        setVideoResolution(`${videoHeight}p`);
+        setVideoResolution(videoWidth === 3840 ? '4k' : videoWidth === 1920 ? '1080p' : videoWidth === 1280 ? '720p' : videoWidth === 854 ? '480p' : videoWidth === 640 ? '360p' : `${videoWidth}p`);
       }
     };
 

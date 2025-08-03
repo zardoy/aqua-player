@@ -31,6 +31,7 @@ export const videoState = proxy({
   duration: 0,
   currentTime: 0,
   playbackRate: 1,
+  fps: 0, // Add FPS state
 
   // File state
   currentFile: '',
@@ -92,14 +93,12 @@ export const videoActions = {
     videoActions.setCurrentTime(newTime);
   },
   nextFrame: () => {
-    // Assuming 30fps as default
-    const frameDuration = 1/30;
+    const frameDuration = videoState.fps > 0 ? 1 / videoState.fps : 1/30;
     const newTime = Math.min(videoState.currentTime + frameDuration, videoState.duration);
     videoActions.setCurrentTime(newTime);
   },
   previousFrame: () => {
-    // Assuming 30fps as default
-    const frameDuration = 1/30;
+    const frameDuration = videoState.fps > 0 ? 1 / videoState.fps : 1/30;
     const newTime = Math.max(videoState.currentTime - frameDuration, 0);
     videoActions.setCurrentTime(newTime);
   },
@@ -313,7 +312,7 @@ export const videoActions = {
   setError: (message: string) => {
     videoState.hasError = true;
     videoState.errorMessage = message;
-  }
+  },
 };
 
 // Add TypeScript interface for the window.electronAPI
