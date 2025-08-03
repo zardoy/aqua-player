@@ -28,6 +28,8 @@ export const defaultKeymap: KeymapAction[] = [
   { code: 'Minus', description: 'Decrease playback rate', action: videoActions.decreasePlaybackRate },
   { code: 'Digit0', description: 'Reset playback rate', action: videoActions.resetPlaybackRate },
   { code: 'KeyO', description: 'Open file', action: videoActions.loadFile },
+  { code: 'KeyQ', description: 'Quit', action: () => window.electronAPI.quit(), ctrlKey: true, },
+  { code: 'KeyW', description: 'Close window', action: () => window.electronAPI.closeWindow(), ctrlKey: true, },
 ];
 
 export function setupKeymap() {

@@ -16,6 +16,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
   maximizeWindow: () => ipcRenderer.send('maximize-window'),
   closeWindow: () => ipcRenderer.send('close-window'),
   toggleFullscreen: () => ipcRenderer.send('toggle-fullscreen'),
+  quit: () => ipcRenderer.send('quit'),
 
   // Media features
   checkAirPlayAvailability: () => ipcRenderer.invoke('check-airplay-availability'),

@@ -1,4 +1,4 @@
-import { BrowserWindow, ipcMain } from 'electron';
+import { app, BrowserWindow, ipcMain } from 'electron';
 
 export function setupWindowHandlers(mainWindow: BrowserWindow) {
   // Set initial progress state
@@ -20,6 +20,10 @@ export function setupWindowHandlers(mainWindow: BrowserWindow) {
 
   ipcMain.on('close-window', () => {
     mainWindow?.close();
+  });
+
+  ipcMain.on('quit', () => {
+    app.quit();
   });
 
   ipcMain.on('toggle-fullscreen', () => {

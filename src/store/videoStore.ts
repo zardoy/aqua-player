@@ -342,6 +342,7 @@ declare global {
       off: (channel: string, callback: (...args: any[]) => void) => void;
       setWindowTitle: (title: string) => void;
       setProgressBar: (isPlaying: boolean, progress: number) => void;
+      quit: () => void;
     };
   }
 }
