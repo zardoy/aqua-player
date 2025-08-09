@@ -64,7 +64,16 @@ export const videoState = proxy({
   // Error handling
   hasError: false,
   errorMessage: '',
+
+  isLooping: false,
+
+  // Playlist state
+  currentFolder: '',
+  playlistFiles: [] as string[],
+  viewedFiles: new Set<string>(),
+  isPlaylistOpen: false,
 });
+globalThis.videoState = videoState
 
 export const videoActions = {
   // Playback controls
@@ -152,11 +161,37 @@ export const videoActions = {
     try {
       const result = await window.electronAPI.openFileDialog();
       if (!result.canceled && result.filePaths.length > 0) {
-        videoState.currentFile = result.filePaths[0];
-        videoState.fileType = result.filePaths[0].split('.').pop() || '';
+        const filePath = result.filePaths[0];
+        videoState.currentFile = filePath;
+        videoState.fileType = filePath.split('.').pop() || '';
         videoState.hasError = false;
         videoState.errorMessage = '';
-        return result.filePaths[0];
+
+        // Update playlist with files from the same folder
+        const folder = filePath.substring(0, filePath.lastIndexOf('/'));
+        videoState.currentFolder = folder;
+        const files = await window.electronAPI.getFolderContents(folder);
+
+        // Determine if current file is video or audio
+        const currentExt = filePath.toLowerCase().split('.').pop() || '';
+        const videoExts = ['mp4', 'webm', 'mkv', 'mov', 'avi'];
+        const audioExts = ['mp3', 'wav', 'ogg', 'flac', 'm4a'];
+
+        const isVideo = videoExts.includes(currentExt);
+        const isAudio = audioExts.includes(currentExt);
+
+        // Filter playlist based on file type
+        videoState.playlistFiles = files.filter(f => {
+          const ext = f.toLowerCase().split('.').pop() || '';
+          if (isVideo) {
+            return videoExts.includes(ext);
+          } else if (isAudio) {
+            return audioExts.includes(ext);
+          }
+          return false;
+        });
+
+        return filePath;
       }
       return null;
     } catch (error) {
@@ -167,13 +202,23 @@ export const videoActions = {
   },
 
   // Load file from path (for drag and drop)
-  loadFilePath: (filePath: string) => {
+  loadFilePath: async (filePath: string) => {
     try {
       if (filePath) {
         videoState.currentFile = filePath;
         videoState.fileType = filePath.split('.').pop() || '';
         videoState.hasError = false;
         videoState.errorMessage = '';
+
+        // Update playlist with files from the same folder
+        const folder = filePath.substring(0, filePath.lastIndexOf('/'));
+        videoState.currentFolder = folder;
+        const files = await window.electronAPI.getFolderContents(folder);
+        videoState.playlistFiles = files.filter(f => {
+          const ext = f.toLowerCase().split('.').pop();
+          return ['mp4', 'webm', 'mkv', 'mov', 'avi'].includes(ext || '');
+        });
+
         return filePath;
       }
       return null;
@@ -181,6 +226,26 @@ export const videoActions = {
       videoState.hasError = true;
       videoState.errorMessage = `Failed to load file: ${error.message}`;
       return null;
+    }
+  },
+
+  markFileAsViewed: (filePath: string) => {
+    videoState.viewedFiles.add(filePath);
+  },
+
+  loadNextFile: () => {
+    const currentIndex = videoState.playlistFiles.indexOf(videoState.currentFile);
+    if (currentIndex < videoState.playlistFiles.length - 1) {
+      const nextFile = videoState.playlistFiles[currentIndex + 1];
+      videoActions.loadFilePath(nextFile);
+    }
+  },
+
+  loadPreviousFile: () => {
+    const currentIndex = videoState.playlistFiles.indexOf(videoState.currentFile);
+    if (currentIndex > 0) {
+      const prevFile = videoState.playlistFiles[currentIndex - 1];
+      videoActions.loadFilePath(prevFile);
     }
   },
 
@@ -303,6 +368,13 @@ export const videoActions = {
   toggleKeymapDialog: () => {
     videoState.isKeymapDialogOpen = !videoState.isKeymapDialogOpen;
   },
+  toggleLoop: () => {
+    videoState.isLooping = !videoState.isLooping;
+  },
+
+  togglePlaylist: () => {
+    videoState.isPlaylistOpen = !videoState.isPlaylistOpen;
+  },
 
   // Error handling
   clearError: () => {
@@ -343,6 +415,7 @@ declare global {
       setWindowTitle: (title: string) => void;
       setProgressBar: (isPlaying: boolean, progress: number) => void;
       quit: () => void;
+      getFolderContents: (folderPath: string) => Promise<string[]>;
     };
   }
 }

@@ -11,6 +11,7 @@ import KeymapDialog from './components/KeymapDialog';
 import VideoControls from './components/VideoControls';
 import { Toaster, toast } from 'sonner';
 import { ErrorBoundary } from './components/ErrorBoundary';
+import PlaylistSidebar from './components/PlaylistSidebar';
 
 const VideoPlayer = () => {
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -376,6 +377,14 @@ const VideoPlayer = () => {
     };
   }, []);
 
+  // Handle video looping
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video) return;
+
+    video.loop = snap.isLooping;
+  }, [snap.isLooping]);
+
   // Load settings on mount
   useEffect(() => {
     settingsActions.loadSettings();
@@ -435,6 +444,9 @@ const VideoPlayer = () => {
               <KeymapDialog onClose={() => videoActions.toggleKeymapDialog()} />
             )}
           </AnimatePresence>
+
+          {/* Playlist Sidebar */}
+          <PlaylistSidebar />
         </div>
       </div>
     </ErrorBoundary>

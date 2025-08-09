@@ -671,3 +671,92 @@ body {
   border: 2px dashed #00aaff;
   background-color: rgba(0, 170, 255, 0.1);
 }
+
+/* Playlist Sidebar */
+.playlist-sidebar {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 300px;
+  background-color: rgba(30, 30, 30, 0.95);
+  box-shadow: -2px 0 10px rgba(0, 0, 0, 0.3);
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+}
+
+.playlist-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px 20px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.playlist-header h3 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 500;
+}
+
+.playlist-content {
+  flex-grow: 1;
+  overflow-y: auto;
+  padding: 10px 0;
+}
+
+.playlist-item {
+  display: flex;
+  align-items: center;
+  padding: 10px 20px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.playlist-item:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.playlist-item.active {
+  background-color: var(--accent-color);
+  color: #ffffff;
+}
+
+.playlist-item .file-name {
+  flex-grow: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.playlist-item .viewed-icon {
+  margin-left: 10px;
+  font-size: 12px;
+  opacity: 0.7;
+}
+
+/* Loop button */
+.control-button.inactive {
+  opacity: 0.5;
+}
+
+/* Scrollbar styling for playlist */
+.playlist-content::-webkit-scrollbar {
+  width: 8px;
+}
+
+.playlist-content::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.playlist-content::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 4px;
+}
+
+.playlist-content::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.4);
+}

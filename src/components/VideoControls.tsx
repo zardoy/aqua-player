@@ -1,7 +1,7 @@
-import React, { useRef, useState, useEffect } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useSnapshot } from 'valtio';
-import { FaPlay, FaPause, FaVolumeUp, FaVolumeDown, FaVolumeMute, FaExpand, FaFolder, FaCog } from 'react-icons/fa';
+import { FaPlay, FaPause, FaVolumeUp, FaVolumeDown, FaVolumeMute, FaExpand, FaFolder, FaCog, FaRedo } from 'react-icons/fa';
 import { MdSubtitles } from 'react-icons/md';
 import { videoState, videoActions } from '../store/videoStore';
 
@@ -77,6 +77,35 @@ const VideoControls: React.FC<VideoControlsProps> = ({
     }
   }, [snap.isMuted, snap.volume]);
 
+  // Handle mouse buttons for playlist navigation
+  useEffect(() => {
+    const handleMouseButton = (e: MouseEvent) => {
+      if (e.button === 3) { // Mouse4 (back)
+        videoActions.loadPreviousFile();
+      } else if (e.button === 4) { // Mouse5 (forward)
+        videoActions.loadNextFile();
+      }
+    };
+
+    window.addEventListener('mouseup', handleMouseButton);
+    return () => window.removeEventListener('mouseup', handleMouseButton);
+  }, []);
+
+  // Mark file as viewed when it ends
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video) return;
+
+    const handleEnded = () => {
+      if (snap.currentFile) {
+        videoActions.markFileAsViewed(snap.currentFile);
+      }
+    };
+
+    video.addEventListener('ended', handleEnded);
+    return () => video.removeEventListener('ended', handleEnded);
+  }, [snap.currentFile]);
+
   return (
     <AnimatePresence>
       {showControls && (
@@ -111,6 +140,15 @@ const VideoControls: React.FC<VideoControlsProps> = ({
                 tabIndex={-1}
               >
                 {snap.isPlaying ? <FaPause /> : <FaPlay />}
+              </button>
+
+              <button
+                onClick={() => videoActions.toggleLoop()}
+                className={`control-button ${!snap.isLooping ? 'inactive' : ''}`}
+                tabIndex={-1}
+                title="Toggle Loop"
+              >
+                <FaRedo />
               </button>
 
               <div className="volume-control">
