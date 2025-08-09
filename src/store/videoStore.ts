@@ -31,6 +31,7 @@ export const videoState = proxy({
   duration: 0,
   currentTime: 0,
   playbackRate: 1,
+  isEnded: false,
   fps: 0, // Add FPS state
 
   // File state
@@ -78,9 +79,18 @@ globalThis.videoState = videoState
 export const videoActions = {
   // Playback controls
   togglePlay: () => {
-    videoState.isPlaying = !videoState.isPlaying;
+    if (videoState.isPlaying) {
+      videoActions.pause();
+    } else {
+      videoActions.play();
+    }
   },
   play: () => {
+    if (videoState.isEnded) {
+      videoState.progress = 0;
+      videoState.currentTime = 0;
+      videoState.isEnded = false;
+    }
     videoState.isPlaying = true;
   },
   pause: () => {
@@ -158,10 +168,17 @@ export const videoActions = {
 
   // File operations
   loadFile: async () => {
+    const result = await window.electronAPI.openFileDialog();
+    if (!result.canceled && result.filePaths.length > 0) {
+      console.log('result', result)
+      videoActions.loadFilePath(result.filePaths[0]);
+    }
+  },
+
+  // Load file from path (for drag and drop)
+  loadFilePath: async (filePath: string) => {
     try {
-      const result = await window.electronAPI.openFileDialog();
-      if (!result.canceled && result.filePaths.length > 0) {
-        const filePath = result.filePaths[0];
+      if (filePath) {
         videoState.currentFile = filePath;
         videoState.fileType = filePath.split('.').pop() || '';
         videoState.hasError = false;
@@ -171,6 +188,7 @@ export const videoActions = {
         const folder = filePath.substring(0, filePath.lastIndexOf('/'));
         videoState.currentFolder = folder;
         const files = await window.electronAPI.getFolderContents(folder);
+        console.log('files', files)
 
         // Determine if current file is video or audio
         const currentExt = filePath.toLowerCase().split('.').pop() || '';
@@ -189,34 +207,6 @@ export const videoActions = {
             return audioExts.includes(ext);
           }
           return false;
-        });
-
-        return filePath;
-      }
-      return null;
-    } catch (error) {
-      videoState.hasError = true;
-      videoState.errorMessage = `Failed to load file: ${error.message}`;
-      return null;
-    }
-  },
-
-  // Load file from path (for drag and drop)
-  loadFilePath: async (filePath: string) => {
-    try {
-      if (filePath) {
-        videoState.currentFile = filePath;
-        videoState.fileType = filePath.split('.').pop() || '';
-        videoState.hasError = false;
-        videoState.errorMessage = '';
-
-        // Update playlist with files from the same folder
-        const folder = filePath.substring(0, filePath.lastIndexOf('/'));
-        videoState.currentFolder = folder;
-        const files = await window.electronAPI.getFolderContents(folder);
-        videoState.playlistFiles = files.filter(f => {
-          const ext = f.toLowerCase().split('.').pop();
-          return ['mp4', 'webm', 'mkv', 'mov', 'avi'].includes(ext || '');
         });
 
         return filePath;
@@ -386,6 +376,7 @@ export const videoActions = {
     videoState.errorMessage = message;
   },
 };
+globalThis.videoActions = videoActions;
 
 // Add TypeScript interface for the window.electronAPI
 declare global {

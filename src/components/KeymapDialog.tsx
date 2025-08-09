@@ -13,7 +13,7 @@ const KeymapDialog: React.FC<KeymapDialogProps> = ({ onClose }) => {
     if (keyAction.metaKey) parts.push('⌘');
     if (keyAction.ctrlKey) parts.push('Ctrl');
     if (keyAction.altKey) parts.push('Alt');
-    if (keyAction.shiftKey) parts.push('⇧');
+    if (keyAction.shiftKey) parts.push('Shift');
 
     const mainKey = keyAction.code
       .replace('Key', '')

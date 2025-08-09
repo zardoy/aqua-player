@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useSnapshot } from 'valtio';
-import { FaPlay, FaPause, FaVolumeUp, FaVolumeDown, FaVolumeMute, FaExpand, FaFolder, FaCog, FaRedo } from 'react-icons/fa';
+import { FaPlay, FaPause, FaVolumeUp, FaVolumeDown, FaVolumeMute, FaExpand, FaFolder, FaCog, FaRedo, FaList } from 'react-icons/fa';
 import { MdSubtitles } from 'react-icons/md';
 import { videoState, videoActions } from '../store/videoStore';
 
@@ -142,15 +142,6 @@ const VideoControls: React.FC<VideoControlsProps> = ({
                 {snap.isPlaying ? <FaPause /> : <FaPlay />}
               </button>
 
-              <button
-                onClick={() => videoActions.toggleLoop()}
-                className={`control-button ${!snap.isLooping ? 'inactive' : ''}`}
-                tabIndex={-1}
-                title="Toggle Loop"
-              >
-                <FaRedo />
-              </button>
-
               <div className="volume-control">
                 <button
                   onClick={() => videoActions.toggleMute()}
@@ -193,6 +184,23 @@ const VideoControls: React.FC<VideoControlsProps> = ({
                   {videoResolution}
                 </div>
               )}
+
+              <button
+                onClick={() => videoActions.toggleLoop()}
+                className={`control-button ${!snap.isLooping ? 'inactive' : ''}`}
+                tabIndex={-1}
+              >
+                <FaRedo />
+              </button>
+
+              <button
+                onClick={() => videoActions.togglePlaylist()}
+                className={`control-button ${!snap.isPlaylistOpen ? 'inactive' : ''}`}
+                tabIndex={-1}
+                title="Toggle Playlist (P)"
+              >
+                <FaList />
+              </button>
             </div>
 
             <div className="right-controls">

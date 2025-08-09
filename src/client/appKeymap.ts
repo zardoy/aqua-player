@@ -28,14 +28,16 @@ export const defaultKeymap: KeymapAction[] = [
   { code: 'Minus', description: 'Decrease playback rate', action: videoActions.decreasePlaybackRate },
   { code: 'Digit0', description: 'Reset playback rate', action: videoActions.resetPlaybackRate },
   { code: 'KeyO', description: 'Open file', action: videoActions.loadFile },
+  { code: 'KeyP', description: 'Toggle playlist', action: videoActions.togglePlaylist },
   { code: 'KeyQ', description: 'Quit', action: () => window.electronAPI.quit(), ctrlKey: true, },
   { code: 'KeyW', description: 'Close window', action: () => window.electronAPI.closeWindow(), ctrlKey: true, },
 ];
 
+const FOCUSABLE = 'input:not([type="range"]):not([type="slider"]), textarea, select, [contenteditable="true"]';
 export function setupKeymap() {
   const handleKeyDown = (e: KeyboardEvent) => {
     // Ignore if any input element is focused
-    if (document.activeElement?.matches('input, textarea, select, [contenteditable="true"]')) {
+    if (document.activeElement?.matches(FOCUSABLE)) {
       return;
     }
 
@@ -52,8 +54,20 @@ export function setupKeymap() {
     }
   };
 
+  // on focus element, remove focus
+  const handleFocus = (e: FocusEvent) => {
+    const target = e.target as HTMLElement;
+    if (!target.matches(FOCUSABLE)) {
+      target.blur();
+    }
+  };
+
   window.addEventListener('keydown', handleKeyDown);
-  return () => window.removeEventListener('keydown', handleKeyDown);
+  window.addEventListener('focusin', handleFocus);
+  return () => {
+    window.removeEventListener('keydown', handleKeyDown);
+    window.removeEventListener('focusin', handleFocus);
+  };
 }
 
 setupKeymap();

@@ -76,11 +76,15 @@ const VideoPlayer = () => {
     const video = videoRef.current;
     if (!video) return;
 
-    if (snap.isPlaying && video.paused) {
+    if (video.ended) {
+      videoState.isEnded = true;
+    }
+
+    if (snap.isPlaying && video.paused && !video.ended) {
       video.play().catch(error => {
         videoActions.setError(`Failed to play video: ${error.message}`);
       });
-    } else if (!snap.isPlaying && !video.paused) {
+    } else if (!snap.isPlaying && !video.paused && !video.ended) {
       video.pause();
     }
 
