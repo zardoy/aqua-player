@@ -50,6 +50,7 @@
     "change-case": "^5.4.4",
     "electron-squirrel-startup": "^1.0.1",
     "electron-updater": "^6.3.9",
+    "electron-window-keeper": "^0.0.2",
     "framer-motion": "^12.23.12",
     "node-mpv": "^2.0.0-beta.2",
     "react": "^19.1.1",

@@ -40,9 +40,9 @@ jobs:
     - name: Install dependencies
       run: pnpm install --frozen-lockfile
 
-    - name: Set build app version env
+    - name: Prepare build metadata
       shell: bash
-      run: echo "APP_VERSION=$(node -p \"require('./package.json').version\")-dev-${{ github.run_number }}" >> $GITHUB_ENV
+      run: node prepare.mjs ${{ github.run_number }}
 
     - name: Build Windows executable
       run: pnpm run make
@@ -94,9 +94,9 @@ jobs:
     - name: Install dependencies
       run: pnpm install --frozen-lockfile
 
-    - name: Set build app version env
+    - name: Prepare build metadata
       shell: bash
-      run: echo "APP_VERSION=$(node -p \"require('./package.json').version\")-dev-${{ github.run_number }}" >> $GITHUB_ENV
+      run: node prepare.mjs ${{ github.run_number }}
 
     - name: Build macOS DMG
       run: pnpm run make
