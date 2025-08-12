@@ -3,25 +3,27 @@ import * as path from 'path';
 import * as fs from 'fs';
 import { deafultSettings } from '../settingsDefinitions';
 
+export const loadSettingsFromDisk = () => {
+  const settingsPath = path.join(app.getPath('userData'), 'settings.json');
+  try {
+    if (!fs.existsSync(settingsPath)) {
+      fs.writeFileSync(settingsPath, JSON.stringify(deafultSettings, null, 2));
+      return deafultSettings;
+    }
+    const settings = JSON.parse(fs.readFileSync(settingsPath, 'utf-8'));
+    return { ...deafultSettings, ...settings };
+  } catch (error) {
+    console.error('Failed to load settings:', error);
+    return deafultSettings;
+  }
+};
+
 export function setupSettingsHandlers() {
   const settingsPath = path.join(app.getPath('userData'), 'settings.json');
 
   // Load settings from disk
   ipcMain.handle('load-settings', async () => {
-    try {
-      if (!fs.existsSync(settingsPath)) {
-        // If settings file doesn't exist, create it with defaults
-        fs.writeFileSync(settingsPath, JSON.stringify(deafultSettings, null, 2));
-        return deafultSettings;
-      }
-
-      const settings = JSON.parse(fs.readFileSync(settingsPath, 'utf-8'));
-      // Merge with defaults to ensure all settings exist
-      return { ...deafultSettings, ...settings };
-    } catch (error) {
-      console.error('Failed to load settings:', error);
-      return deafultSettings;
-    }
+    return loadSettingsFromDisk();
   });
 
   // Save settings to disk

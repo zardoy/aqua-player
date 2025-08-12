@@ -1,4 +1,4 @@
-import { proxy } from 'valtio';
+import { proxy, useSnapshot } from 'valtio';
 import { noCase } from 'change-case';
 import { deafultSettings, AppSettings, settingsUi } from '../settingsDefinitions';
 
@@ -136,4 +136,9 @@ export const settingsActions = {
       }, 1000);
     };
   })(),
+};
+
+export const useSettings = () => {
+  const snap = useSnapshot(settingsState);
+  return snap;
 };

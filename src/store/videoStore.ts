@@ -185,7 +185,11 @@ export const videoActions = {
         videoState.errorMessage = '';
 
         // Update playlist with files from the same folder
-        const folder = filePath.substring(0, filePath.lastIndexOf('/'));
+        const lastSeparatorIndex = Math.max(
+          filePath.lastIndexOf('/'),
+          filePath.lastIndexOf('\\')
+        );
+        const folder = lastSeparatorIndex >= 0 ? filePath.slice(0, lastSeparatorIndex) : '';
         videoState.currentFolder = folder;
         const files = await window.electronAPI.getFolderContents(folder);
         console.log('files', files)
@@ -221,6 +225,14 @@ export const videoActions = {
 
   markFileAsViewed: (filePath: string) => {
     videoState.viewedFiles.add(filePath);
+    // Persist metadata about watched videos
+    try {
+      window.electronAPI.syncMetadata({
+        watchedVideos: {
+          [filePath]: { watchedAt: new Date().toISOString() }
+        }
+      });
+    } catch {}
   },
 
   loadNextFile: () => {
@@ -407,6 +419,9 @@ declare global {
       setProgressBar: (isPlaying: boolean, progress: number) => void;
       quit: () => void;
       getFolderContents: (folderPath: string) => Promise<string[]>;
+      syncMetadata: (metadata: { watchedVideos?: { [key: string]: { watchedAt: string } } }) => void;
+      openDefaultAppsSettings: () => Promise<boolean>;
+      checkForUpdatesNow: () => Promise<boolean>;
     };
   }
 }

@@ -40,10 +40,15 @@ jobs:
     - name: Install dependencies
       run: pnpm install --frozen-lockfile
 
+    - name: Set build app version env
+      shell: bash
+      run: echo "APP_VERSION=$(node -p \"require('./package.json').version\")-dev-${{ github.run_number }}" >> $GITHUB_ENV
+
     - name: Build Windows executable
       run: pnpm run make
       env:
         GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        APP_VERSION: ${{ env.APP_VERSION }}
 
     # list the files in the out directory recursively
     - name: List files in out directory
@@ -89,10 +94,15 @@ jobs:
     - name: Install dependencies
       run: pnpm install --frozen-lockfile
 
+    - name: Set build app version env
+      shell: bash
+      run: echo "APP_VERSION=$(node -p \"require('./package.json').version\")-dev-${{ github.run_number }}" >> $GITHUB_ENV
+
     - name: Build macOS DMG
       run: pnpm run make
       env:
         GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        APP_VERSION: ${{ env.APP_VERSION }}
 
     - name: Upload macOS artifacts
       uses: actions/upload-artifact@v4

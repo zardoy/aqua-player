@@ -34,6 +34,13 @@ contextBridge.exposeInMainWorld('electronAPI', {
   loadSettings: () => ipcRenderer.invoke('load-settings'),
   saveSettings: (settings: any) => ipcRenderer.invoke('save-settings', settings),
 
+  // Metadata
+  syncMetadata: (delta?: any) => ipcRenderer.invoke('sync-metadata', delta),
+
+  // System helpers
+  openDefaultAppsSettings: () => ipcRenderer.invoke('open-default-apps-settings'),
+  checkForUpdatesNow: () => ipcRenderer.invoke('check-for-updates-now'),
+
   // Window dragging
   startWindowDrag: (mouseX: number, mouseY: number) => ipcRenderer.send('window-drag-start', { mouseX, mouseY }),
   moveWindow: (mouseX: number, mouseY: number, startBounds: any, startMouseX: number, startMouseY: number) =>
@@ -42,6 +49,6 @@ contextBridge.exposeInMainWorld('electronAPI', {
   off: (channel: string, callback: (...args: any[]) => void) => ipcRenderer.removeListener(channel, callback),
 
   // Progress bar
-  setWindowTitle: (title: string) => ipcRenderer.send('set-window-title', title),
-  setProgressBar: (isPlaying: boolean, progress: number) => ipcRenderer.send('set-progress-bar', { isPlaying, progress }),
+  setWindowTitle: (title: string) => ipcRenderer.send('update-window-title', title),
+  setProgressBar: (isPlaying: boolean, progress: number) => ipcRenderer.send('update-progress-bar', { isPlaying, progress }),
 });

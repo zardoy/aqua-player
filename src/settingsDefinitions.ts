@@ -5,6 +5,9 @@ export const deafultSettings = {
 
     "advanced.mpvExecutable": '',
     "advanced.mpvArgs": '',
+
+    "app.firstRun": true,
+    "updates.autoUpdate": true,
 }
 
 export type AppSettings = typeof deafultSettings;
@@ -24,4 +27,9 @@ export const settingsUi: Partial<Record<keyof AppSettings, boolean | {
     "advanced.mpvArgs": {
         tip: 'Additional arguments to pass to mpv. For example, "--hwdec=auto" to enable hardware decoding.',
     },
+    "updates.autoUpdate": {
+        tip: 'Automatically download and install updates when available.',
+    },
+    // Hide firstRun from settings UI
+    "app.firstRun": false,
 }

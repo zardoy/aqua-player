@@ -2,6 +2,7 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { FaTimes } from 'react-icons/fa';
 import { defaultKeymap } from '../client/appKeymap';
+import Modal from './base/Modal';
 
 interface KeymapDialogProps {
   onClose: () => void;
@@ -25,27 +26,7 @@ const KeymapDialog: React.FC<KeymapDialogProps> = ({ onClose }) => {
   };
 
   return (
-    <motion.div
-      className="settings-overlay"
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      onClick={onClose}
-    >
-      <motion.div
-        className="settings-panel"
-        initial={{ scale: 0.95, opacity: 0 }}
-        animate={{ scale: 1, opacity: 1 }}
-        exit={{ scale: 0.95, opacity: 0 }}
-        onClick={e => e.stopPropagation()}
-      >
-        <div className="settings-header">
-          <h3>Keyboard Shortcuts</h3>
-          <button onClick={onClose} className="close-button">
-            <FaTimes />
-          </button>
-        </div>
-        <div className="settings-content">
+    <Modal title="Keyboard Shortcuts" onClose={onClose}>
           <table className="keymap-table">
             <thead>
               <tr>
@@ -62,9 +43,7 @@ const KeymapDialog: React.FC<KeymapDialogProps> = ({ onClose }) => {
               ))}
             </tbody>
           </table>
-        </div>
-      </motion.div>
-    </motion.div>
+    </Modal>
   );
 };
 

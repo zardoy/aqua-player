@@ -5,13 +5,14 @@ import { useSnapshot } from 'valtio';
 import { FaTimes } from 'react-icons/fa';
 import './index.css';
 import { videoState, videoActions } from './store/videoStore';
-import { settingsState, settingsActions } from './store/settingsStore';
+import { settingsState, settingsActions, useSettings } from './store/settingsStore';
 import SettingsPanel from './components/SettingsPanel';
 import KeymapDialog from './components/KeymapDialog';
 import VideoControls from './components/VideoControls';
 import { Toaster, toast } from 'sonner';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import PlaylistSidebar from './components/PlaylistSidebar';
+import InitialSetupDialog from './components/InitialSetupDialog';
 
 const VideoPlayer = () => {
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -130,8 +131,7 @@ const VideoPlayer = () => {
       const fileName = snap.currentFile.split(/[/\\]/).pop() || '';
       window.electronAPI.setWindowTitle(fileName);
 
-      // Use custom protocol for local files to avoid CSP issues
-      const fileUrl = snap.currentFile.startsWith('local-file://') ? snap.currentFile : `file://${snap.currentFile}`;
+      const fileUrl = snap.currentFile.startsWith('file://') ? snap.currentFile : `file://${snap.currentFile}`;
       video.src = fileUrl;
 
       // Add error handling for video loading
@@ -394,10 +394,32 @@ const VideoPlayer = () => {
     settingsActions.loadSettings();
   }, []);
 
+  // Listen for OS-level open-file events
+  useEffect(() => {
+    const handler = (_event: any, filePath: string) => {
+      if (filePath) {
+        videoActions.loadFilePath(filePath);
+      }
+    };
+    window.electronAPI.on('open-file', handler);
+    return () => {
+      window.electronAPI.off('open-file', handler);
+    };
+  }, []);
+
+  const settings = useSettings();
+
   return (
     <ErrorBoundary>
       <div className="app-container">
         <Toaster position="top-right" richColors theme='dark' offset={{ top: 30 }} />
+        <AnimatePresence>
+          {settings["app.firstRun"] && (
+            <InitialSetupDialog
+              onClose={() => settingsActions.updateSetting("app.firstRun", false)}
+            />
+          )}
+        </AnimatePresence>
         <div className={`floating-time-container ${window.electronAPI.platform === 'win32' ? 'windows' : ''}`}>
           <div className="floating-time">{currentTime}</div>
         </div>

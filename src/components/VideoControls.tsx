@@ -75,7 +75,7 @@ const VideoControls: React.FC<VideoControlsProps> = ({
       const percentage = (volume * 100) + '%';
       volumeBar.style.setProperty('--volume-progress', percentage);
     }
-  }, [snap.isMuted, snap.volume]);
+  }, [snap.isMuted, snap.volume, showControls]);
 
   // Handle mouse buttons for playlist navigation
   useEffect(() => {

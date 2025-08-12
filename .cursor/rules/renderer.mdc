@@ -1,0 +1,21 @@
+---
+description:
+globs: src/**
+alwaysApply: false
+---
+Do not introduce code duplication, use shared functions and split jsx into smaller components in the same file. If you feel it would make code too bloated because of props creating, feel free to use valtio proxy objects for local state managing.
+
+# React
+
+- Use the shared modal component at `src/components/base/Modal.tsx` for ALL dialogs (settings, keymap, initial setup, future dialogs).
+- Do not reimplement overlay/panel markup in individual dialogs. Compose dialog content inside `Modal` instead.
+- Place any new shared UI primitives under `src/components/base/` and refactor existing components to reuse them.
+
+To use settings inside jsx rendering logic always use variable from useSettings, but to change updateSetting. Example:
+
+```tsx
+const Component = () => {
+    const settings = useSettings()
+    if (!settings.something) return null
+}
+```
