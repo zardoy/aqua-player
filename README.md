@@ -1,10 +1,12 @@
 # Aqua Player
 
-<img src="./banner.png" alt="Aqua Player banner" width="300" />
+<img src="./assets/banner.png" alt="Aqua Player banner" width="300" />
 
 An opinionated, modern video player for desktop. It reflects a strong vision: informative yet simple, beautiful UI with rich, practical functionality. Inspired by Soda Player.
 
 Aqua Player also serves as a clear example of how to build a polished video player with Electron, React, and electron-forge (Webpack based).
+
+<img src="./assets/demo.png" alt="Aqua Player" width="650" />
 
 ## Highlights
 
