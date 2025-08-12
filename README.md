@@ -1,6 +1,6 @@
 # Aqua Player
 
-<img src="./banner.png" alt="Aqua Player banner" width="600" />
+<img src="./banner.png" alt="Aqua Player banner" width="300" />
 
 An opinionated, modern video player for desktop. It reflects a strong vision: informative yet simple, beautiful UI with rich, practical functionality. Inspired by Soda Player.
 
