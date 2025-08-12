@@ -4,6 +4,7 @@ import { setupFileHandlers } from './fileHandlers';
 import { setupSettingsHandlers } from './settingsHandlers';
 import { setupMetadataHandlers } from './metadataHandlers';
 import { setupSystemHandlers } from './systemHandlers';
+import { setupLogForwarding } from './logHandlers';
 
 export function setupIpcHandlers(mainWindow: BrowserWindow) {
   setupWindowHandlers(mainWindow);
@@ -11,4 +12,5 @@ export function setupIpcHandlers(mainWindow: BrowserWindow) {
   setupSettingsHandlers();
   setupMetadataHandlers();
   setupSystemHandlers();
+  setupLogForwarding(mainWindow);
 }

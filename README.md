@@ -6,7 +6,7 @@ An opinionated, modern video player for desktop. It reflects a strong vision: in
 
 Aqua Player also serves as a clear example of how to build a polished video player with Electron, React, and electron-forge (Webpack based).
 
-<img src="./assets/demo.png" alt="Aqua Player" width="650" />
+<img src="./assets/demo.png" alt="Aqua Player" width="700" />
 
 ## Highlights
 

@@ -52,3 +52,10 @@ contextBridge.exposeInMainWorld('electronAPI', {
   setWindowTitle: (title: string) => ipcRenderer.send('update-window-title', title),
   setProgressBar: (isPlaying: boolean, progress: number) => ipcRenderer.send('update-progress-bar', { isPlaying, progress }),
 });
+
+// Forward main process logs to the renderer console
+ipcRenderer.on('main-log', (_evt, payload: { level: 'log'|'info'|'warn'|'error'|'debug'; args: string[] }) => {
+  const { level, args } = payload || { level: 'log', args: [] };
+  const fn = console[level] || console.log;
+  fn('[main]', ...args);
+});
