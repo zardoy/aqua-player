@@ -1,3 +1,4 @@
+import { AUDIO_EXTENSIONS, VIDEO_EXTENSIONS } from '../shared/constants';
 import { proxy } from 'valtio';
 
 type VideoTrack = {
@@ -196,8 +197,8 @@ export const videoActions = {
 
         // Determine if current file is video or audio
         const currentExt = filePath.toLowerCase().split('.').pop() || '';
-        const videoExts = ['mp4', 'webm', 'mkv', 'mov', 'avi'];
-        const audioExts = ['mp3', 'wav', 'ogg', 'flac', 'm4a'];
+        const videoExts = VIDEO_EXTENSIONS;
+        const audioExts = AUDIO_EXTENSIONS;
 
         const isVideo = videoExts.includes(currentExt);
         const isAudio = audioExts.includes(currentExt);

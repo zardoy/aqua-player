@@ -27,10 +27,15 @@ if (!gotLock) {
 }
 
 app.on('second-instance', (_event, argv) => {
-  if (!mainWindow) return
+  if (!mainWindow) return;
   if (mainWindow.isMinimized()) mainWindow.restore();
   mainWindow.focus();
-  mainWindow.webContents.send('open-file', argv[1]);
+
+  // Only send the file path if it exists and looks like a valid path
+  const filePath = argv[1];
+  if (filePath && (filePath.includes('/') || filePath.includes('\\'))) {
+    mainWindow.webContents.send('open-file', filePath);
+  }
 });
 
 // macOS open-file handler
