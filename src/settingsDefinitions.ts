@@ -14,6 +14,9 @@ export const deafultSettings = {
     controls__wheelVolumeControl: true,
     // TODO
     controls__thumbnailControl: true,
+
+    remoteUI__enabled: false,
+    remoteUI__password: 'aqua123',
 }
 
 export type AppSettings = typeof deafultSettings;
@@ -38,6 +41,12 @@ export const settingsUi: Partial<Record<keyof AppSettings, boolean | {
     },
     app__autoUpdate: {
         tip: 'Automatically download and install updates when available.',
+    },
+    remoteUI__enabled: {
+        tip: 'Enable remote UI access via web browser and WebSocket.',
+    },
+    remoteUI__password: {
+        tip: 'Password required to access the remote UI.',
     },
     // Hide firstRun and volume from settings UI
     app__firstRun: false,

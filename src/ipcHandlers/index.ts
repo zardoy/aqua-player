@@ -5,6 +5,7 @@ import { setupSettingsHandlers } from './settingsHandlers';
 import { setupMetadataHandlers } from './metadataHandlers';
 import { setupSystemHandlers } from './systemHandlers';
 import { setupLogForwarding } from './logHandlers';
+import { setupRemoteUIHandlers } from './remoteUIHandlers';
 
 export function setupIpcHandlers(mainWindow: BrowserWindow) {
   setupWindowHandlers(mainWindow);
@@ -13,4 +14,5 @@ export function setupIpcHandlers(mainWindow: BrowserWindow) {
   setupMetadataHandlers();
   setupSystemHandlers();
   setupLogForwarding(mainWindow);
+  setupRemoteUIHandlers(mainWindow);
 }
