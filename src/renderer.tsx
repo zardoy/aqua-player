@@ -32,8 +32,8 @@ const VideoPlayer = () => {
     settingsActions.loadSettings().then(() => {
       // Load volume from settings
       const settings = settingsState;
-      if (settings && settings['player.volume']) {
-        videoActions.setVolume(settings['player.volume'] / 100);
+      if (settings && settings.player__volume) {
+        videoActions.setVolume(settings.player__volume / 100);
       }
     });
   }, []);
@@ -132,9 +132,9 @@ const VideoPlayer = () => {
       <div className="app-container">
         <Toaster position="top-right" richColors theme='dark' offset={{ top: 30 }} />
         <AnimatePresence>
-          {settings["app.firstRun"] && (
+          {settings.app__firstRun && (
             <InitialSetupDialog
-              onClose={() => settingsActions.updateSetting("app.firstRun", false)}
+              onClose={() => settingsActions.updateSetting('app__firstRun', false)}
             />
           )}
         </AnimatePresence>

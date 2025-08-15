@@ -37,8 +37,8 @@ export const getSettingsCategories = (): SettingsCategory[] => {
 
     const uiConfig = typeof _uiConfig === 'boolean' ? {} : _uiConfig;
 
-    // Get category from the key (everything before the first dot)
-    const [category] = key.split('.');
+    // Get category from the key (everything before the double underscore)
+    const [category, ...settingParts] = key.split('__');
     const categoryName = noCase(category);
 
     // Initialize category if it doesn't exist
@@ -49,8 +49,8 @@ export const getSettingsCategories = (): SettingsCategory[] => {
       });
     }
 
-    // Get setting name (everything after the first dot)
-    const settingName = key.split('.').slice(1).join('.');
+    // Get setting name (everything after the double underscore)
+    const settingName = settingParts.join('__');
     const label = noCase(settingName);
 
     // Determine setting type and options

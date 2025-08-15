@@ -68,7 +68,7 @@ const VideoControlsVisible: React.FC<VideoControlsProps> = ({
 
   // Wheel volume control
   useEffect(() => {
-    if (!settings['controls.wheelVolumeControl']) return;
+    if (!settings.controls__wheelVolumeControl) return;
 
     const handleWheel = (e: WheelEvent) => {
       // Prevent wheel events when hovering over controls

@@ -11,7 +11,7 @@ interface InitialSetupDialogProps {
 
 const InitialSetupDialog: React.FC<InitialSetupDialogProps> = ({ onClose }) => {
   const snap = useSnapshot(settingsState);
-  const [autoUpdate, setAutoUpdate] = useState<boolean>(!!snap['updates.autoUpdate']);
+  const [autoUpdate, setAutoUpdate] = useState<boolean>(!!snap.app__autoUpdate);
 
   const handleContinue = () => {
     onClose();
