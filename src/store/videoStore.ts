@@ -29,6 +29,7 @@ export const videoState = proxy({
   volume: 1,
   isMuted: false,
   isFullScreen: false,
+  videoResolutionDisplay: '',
   duration: 0,
   currentTime: 0,
   playbackRate: 1,

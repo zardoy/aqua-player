@@ -274,50 +274,31 @@ body {
 }
 
 .volume-bar {
-  -webkit-appearance: none;
-  width: 60px;
-  height: 4px;
-  background: rgba(255, 255, 255, 0.2);
-  outline: none;
-  border-radius: 4px;
   margin: 0 5px;
 }
 
-.volume-bar::-webkit-slider-runnable-track {
-  -webkit-appearance: none;
-  height: 4px;
-  border-radius: 4px;
+.volume-slider-container {
+  transition: opacity 0.2s ease;
 }
 
-.volume-bar::-moz-range-track {
-  height: 4px;
-  border-radius: 4px;
-  background: rgba(255, 255, 255, 0.2);
+.volume-slider-container:hover .volume-slider-thumb {
+  transform: translate(-50%, -50%) scale(1.2);
 }
 
-.volume-bar::-webkit-slider-thumb {
-  -webkit-appearance: none;
-  appearance: none;
-  width: 10px;
-  height: 10px;
-  background: var(--accent-color);
-  cursor: pointer;
-  border-radius: 50%;
-  margin-top: -3px;
+.volume-slider-thumb {
+  transition: transform 0.2s ease;
 }
 
-.volume-bar::-moz-range-thumb {
-  width: 10px;
-  height: 10px;
-  background: var(--accent-color);
-  cursor: pointer;
-  border-radius: 50%;
-  border: none;
+.volume-slider-track {
+  transition: background-color 0.2s ease;
+}
+
+.volume-slider-container:hover .volume-slider-track {
+  background-color: rgba(255, 255, 255, 0.3);
 }
 
 /* Add dynamic background for volume bar */
 .volume-bar {
-  background: linear-gradient(to right, var(--accent-color) 0%, var(--accent-color) var(--volume-progress, 0%), rgba(255, 255, 255, 0.2) var(--volume-progress, 0%));
 }
 
 .playback-rate {

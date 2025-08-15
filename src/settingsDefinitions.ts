@@ -1,5 +1,8 @@
 export const deafultSettings = {
     "player.savePosition": true,
+    "player.saveHistory": true,
+
+    "player.volume": 100,
 
     "ui.showTime": 'always' as 'always' | 'never' | 'ui-active',
 
@@ -7,7 +10,9 @@ export const deafultSettings = {
     "advanced.mpvArgs": '',
 
     "app.firstRun": true,
-    "updates.autoUpdate": true,
+    "app.autoUpdate": true,
+
+    "controls.wheelVolumeControl": true,
 }
 
 export type AppSettings = typeof deafultSettings;
@@ -18,6 +23,9 @@ export const settingsUi: Partial<Record<keyof AppSettings, boolean | {
     requiresRestart?: boolean;
 }>> = {
     "player.savePosition": true,
+    "controls.wheelVolumeControl": {
+        tip: 'Enable mouse wheel scrolling to control volume.',
+    },
     "ui.showTime": {
         choices: ['always', 'never', 'ui-active'],
     },
@@ -27,9 +35,10 @@ export const settingsUi: Partial<Record<keyof AppSettings, boolean | {
     "advanced.mpvArgs": {
         tip: 'Additional arguments to pass to mpv. For example, "--hwdec=auto" to enable hardware decoding.',
     },
-    "updates.autoUpdate": {
+    "app.autoUpdate": {
         tip: 'Automatically download and install updates when available.',
     },
-    // Hide firstRun from settings UI
+    // Hide firstRun and volume from settings UI
     "app.firstRun": false,
+    "player.volume": false,
 }

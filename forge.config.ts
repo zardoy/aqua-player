@@ -17,6 +17,78 @@ const config: ForgeConfig = {
   packagerConfig: {
     asar: true,
     icon: './assets/icon',
+    protocols: [
+      {
+        name: 'Aqua Player',
+        schemes: ['aqua-player']
+      }
+    ],
+    // File associations for macOS
+    extendInfo: {
+      CFBundleDocumentTypes: [
+        {
+          CFBundleTypeName: 'Video File',
+          CFBundleTypeRole: 'Viewer',
+          CFBundleTypeExtensions: ['mp4', 'webm', 'ogg', 'mkv', 'avi', 'mov', 'wmv', 'm4v', 'flv', '3gp'],
+          CFBundleTypeIconFile: 'icon.icns',
+          LSHandlerRank: 'Default'
+        },
+        {
+          CFBundleTypeName: 'Audio File',
+          CFBundleTypeRole: 'Viewer',
+          CFBundleTypeExtensions: ['mp3', 'wav', 'ogg', 'flac', 'm4a', 'aac', 'wma'],
+          CFBundleTypeIconFile: 'icon.icns',
+          LSHandlerRank: 'Default'
+        }
+      ]
+    },
+    // File associations for Windows
+    win32metadata: {
+      FileAssociations: [
+        {
+          ext: 'mp4',
+          name: 'MP4 Video File',
+          description: 'MP4 Video File',
+          mimeType: 'video/mp4',
+          role: 'Viewer'
+        },
+        {
+          ext: 'mkv',
+          name: 'Matroska Video File',
+          description: 'Matroska Video File',
+          mimeType: 'video/x-matroska',
+          role: 'Viewer'
+        },
+        {
+          ext: 'avi',
+          name: 'AVI Video File',
+          description: 'AVI Video File',
+          mimeType: 'video/x-msvideo',
+          role: 'Viewer'
+        },
+        {
+          ext: 'mov',
+          name: 'QuickTime Video File',
+          description: 'QuickTime Video File',
+          mimeType: 'video/quicktime',
+          role: 'Viewer'
+        },
+        {
+          ext: 'webm',
+          name: 'WebM Video File',
+          description: 'WebM Video File',
+          mimeType: 'video/webm',
+          role: 'Viewer'
+        },
+        {
+          ext: 'mp3',
+          name: 'MP3 Audio File',
+          description: 'MP3 Audio File',
+          mimeType: 'audio/mpeg',
+          role: 'Viewer'
+        }
+      ]
+    } as any
   },
   rebuildConfig: {},
   makers: [
