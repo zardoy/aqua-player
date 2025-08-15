@@ -38,6 +38,30 @@ const VideoPlayer = () => {
     });
   }, []);
 
+  // Handle thumbnail control events
+  useEffect(() => {
+    const handler = (_event: any, action: string) => {
+      switch (action) {
+        case 'prev':
+          videoActions.loadPreviousFile();
+          break;
+        case 'playpause':
+          videoActions.togglePlay();
+          break;
+        case 'next':
+          videoActions.loadNextFile();
+          break;
+        case 'fullscreen':
+          videoActions.toggleFullScreen();
+          break;
+      }
+    };
+    window.electronAPI.on('thumbnail-control', handler);
+    return () => {
+      window.electronAPI.off('thumbnail-control', handler);
+    };
+  }, []);
+
   // Update system time every second
   useEffect(() => {
     setCurrentTime(new Intl.DateTimeFormat(undefined, { hour: '2-digit', minute: '2-digit' }).format(new Date()));

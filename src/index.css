@@ -667,6 +667,11 @@ body {
   flex-direction: column;
 }
 
+/* Add margin on Windows when not in fullscreen */
+.app-container:not(.fullscreen) .playlist-sidebar.windows {
+  top: 30px;
+}
+
 .playlist-header {
   display: flex;
   justify-content: space-between;

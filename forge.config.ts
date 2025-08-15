@@ -17,6 +17,9 @@ const config: ForgeConfig = {
   packagerConfig: {
     asar: true,
     icon: './assets/icon',
+    extraResource: [
+      './assets/thumbnail_control'
+    ],
     protocols: [
       {
         name: 'Aqua Player',

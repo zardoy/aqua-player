@@ -1,4 +1,4 @@
-import { app, BrowserWindow, protocol, net } from 'electron';
+import { app, BrowserWindow, protocol, net, nativeImage, ipcMain } from 'electron';
 import * as path from 'path';
 import * as fs from 'fs';
 import { pathToFileURL } from 'url';
@@ -123,6 +123,48 @@ const createWindow = (): void => {
 
   // Set up IPC handlers for file operations
   initializeIpcHandlers();
+
+  // Set up Windows thumbnail toolbar
+  if (process.platform === 'win32') {
+    const thumbnailToolbar = {
+      buttons: [
+        {
+          tooltip: 'Previous',
+          icon: nativeImage.createFromPath(path.join(app.getAppPath(), 'assets/thumbnail_control/prev.png')),
+          click: () => mainWindow?.webContents.send('thumbnail-control', 'prev')
+        },
+        {
+          tooltip: 'Play/Pause',
+          icon: nativeImage.createFromPath(path.join(app.getAppPath(), 'assets/thumbnail_control/play.png')),
+          click: () => mainWindow?.webContents.send('thumbnail-control', 'playpause')
+        },
+        {
+          tooltip: 'Next',
+          icon: nativeImage.createFromPath(path.join(app.getAppPath(), 'assets/thumbnail_control/next.png')),
+          click: () => mainWindow?.webContents.send('thumbnail-control', 'next')
+        },
+        {
+          tooltip: 'Toggle Fullscreen',
+          icon: nativeImage.createFromPath(path.join(app.getAppPath(), 'assets/thumbnail_control/fullscreen.png')),
+          click: () => mainWindow?.webContents.send('thumbnail-control', 'fullscreen')
+        }
+      ]
+    };
+
+    mainWindow.setThumbarButtons(thumbnailToolbar.buttons);
+
+    // Update play/pause button based on playback state
+    ipcMain.on('update-progress-bar', (_event, { isPlaying }) => {
+      if (!mainWindow || process.platform !== 'win32') return;
+
+      const buttons = [...thumbnailToolbar.buttons];
+      buttons[1].icon = nativeImage.createFromPath(path.join(
+        app.getAppPath(),
+        `assets/thumbnail_control/${isPlaying ? 'pause' : 'play'}.png`
+      ));
+      mainWindow.setThumbarButtons(buttons);
+    });
+  }
 };
 
 // Set up IPC handlers for communication between renderer and main process

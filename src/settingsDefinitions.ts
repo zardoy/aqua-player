@@ -2,12 +2,18 @@ export const deafultSettings = {
     player__savePosition: true,
     player__saveHistory: true,
     player__volume: 100,
+
     ui__showTime: 'always' as 'always' | 'never' | 'ui-active',
+
     advanced__mpvExecutable: '',
     advanced__mpvArgs: '',
+
     app__firstRun: true,
     app__autoUpdate: true,
+
     controls__wheelVolumeControl: true,
+    // TODO
+    controls__thumbnailControl: true,
 }
 
 export type AppSettings = typeof deafultSettings;
