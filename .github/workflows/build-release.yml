@@ -48,7 +48,7 @@ jobs:
       run: pnpm run make
       env:
         GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        APP_VERSION: ${{ env.APP_VERSION }}
+        APP_VERSION: alpha-${{ github.run_number }}
 
     # list the files in the out directory recursively
     - name: List files in out directory
@@ -102,7 +102,7 @@ jobs:
       run: pnpm run make
       env:
         GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        APP_VERSION: ${{ env.APP_VERSION }}
+        APP_VERSION: alpha-${{ github.run_number }}
 
     - name: Upload macOS artifacts
       uses: actions/upload-artifact@v4
