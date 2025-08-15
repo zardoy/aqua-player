@@ -1,5 +1,7 @@
 import type { Configuration } from 'webpack';
 import * as path from 'path';
+import { rules } from './webpack.rules';
+import { plugins } from './webpack.plugins';
 
 export const remoteUIConfig: Configuration = {
   mode: 'development',
@@ -10,20 +12,11 @@ export const remoteUIConfig: Configuration = {
     publicPath: '/'
   },
   module: {
-    rules: [
-      {
-        test: /\.tsx?$/,
-        use: 'ts-loader',
-        exclude: /node_modules/
-      },
-      {
-        test: /\.css$/,
-        use: ['style-loader', 'css-loader']
-      }
-    ]
+    rules,
   },
+  plugins,
   resolve: {
-    extensions: ['.ts', '.tsx', '.js', '.jsx', '.css']
+    extensions: ['.js', '.ts', '.jsx', '.tsx', '.css', '.json'],
   },
   devtool: 'source-map'
 };

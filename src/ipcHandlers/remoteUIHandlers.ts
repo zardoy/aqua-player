@@ -70,6 +70,21 @@ export function setupRemoteUIHandlers(mainWindow: BrowserWindow) {
       remoteUIServer.broadcastFileInfo(filename);
     }
   });
+
+  // Handle settings updates for remote UI
+  ipcMain.handle('remote-ui-update-settings', async (event, settings) => {
+    if (!remoteUIServer) return false;
+    
+    if (settings.remoteUI__enabled !== undefined) {
+      remoteUIServer.setEnabled(settings.remoteUI__enabled);
+    }
+    
+    if (settings.remoteUI__password !== undefined) {
+      remoteUIServer.updatePassword(settings.remoteUI__password);
+    }
+    
+    return true;
+  });
 }
 
 function handleRemoteUICommand(mainWindow: BrowserWindow, command: string) {
