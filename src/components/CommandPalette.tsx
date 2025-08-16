@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { commands, Command } from '../commands';
+import { commands, commandsList, runCommand, Command, CommandArrayItem } from '../commands';
 import KeybindDisplay from './KeybindDisplay';
 import './CommandPalette.css';
 
@@ -36,11 +36,11 @@ const CommandPalette: React.FC<CommandPaletteProps> = ({ isOpen, onClose }) => {
 
   // Filter and sort commands
   const filteredCommands = React.useMemo(() => {
-    let filtered = commands;
+    let filtered = commandsList;
 
     if (searchTerm.trim()) {
       const search = searchTerm.toLowerCase();
-      filtered = commands.filter(command =>
+      filtered = commandsList.filter(command =>
         command.name.toLowerCase().includes(search) ||
         command.description.toLowerCase().includes(search) ||
         command.category.toLowerCase().includes(search)
@@ -74,7 +74,7 @@ const CommandPalette: React.FC<CommandPaletteProps> = ({ isOpen, onClose }) => {
     }
   }, [isOpen]);
 
-  const executeCommand = (command: Command) => {
+  const executeCommand = (command: CommandArrayItem) => {
     try {
       command.action();
       addRecentCommand(command.id);
@@ -159,7 +159,7 @@ const CommandPalette: React.FC<CommandPaletteProps> = ({ isOpen, onClose }) => {
                       </div>
                       <div className="command-description">{command.description}</div>
                     </div>
-                    <KeybindDisplay keybind={command.keybind} />
+                    <KeybindDisplay keybind={command.keybind || undefined} />
                   </div>
                 ))
               )}
