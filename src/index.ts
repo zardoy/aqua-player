@@ -33,10 +33,10 @@ if (require('electron-squirrel-startup')) {
 let mainWindow: BrowserWindow | null = null;
 
 // Ensure single instance to handle file open events
-const gotLock = app.requestSingleInstanceLock();
-if (!gotLock) {
-  app.quit();
-}
+// const gotLock = app.requestSingleInstanceLock();
+// if (!gotLock) {
+//   app.quit();
+// }
 
 app.on('second-instance', (_event, argv) => {
   if (!mainWindow) return;
@@ -76,7 +76,6 @@ const createWindow = (): void => {
       webSecurity: false,
     },
     backgroundColor: '#121212',
-    show: false,
     frame: false, // Make window borderless
     titleBarStyle: 'hidden',
     titleBarOverlay: {
@@ -111,12 +110,6 @@ const createWindow = (): void => {
   });
 
 
-
-  // Show window when ready to avoid flickering
-  mainWindow.once('ready-to-show', () => {
-    mainWindow?.show();
-  });
-
   // Open the DevTools in development mode
   if (process.env.NODE_ENV === 'development') {
     mainWindow.webContents.openDevTools();
@@ -144,11 +137,11 @@ const createWindow = (): void => {
           icon: nativeImage.createFromPath(path.join(app.getAppPath(), 'assets/thumbnail_control/next.png')),
           click: () => mainWindow?.webContents.send('thumbnail-control', 'next')
         },
-        {
-          tooltip: 'Toggle Fullscreen',
-          icon: nativeImage.createFromPath(path.join(app.getAppPath(), 'assets/thumbnail_control/fullscreen.png')),
-          click: () => mainWindow?.webContents.send('thumbnail-control', 'fullscreen')
-        }
+        // {
+        //   tooltip: 'Toggle Fullscreen',
+        //   icon: nativeImage.createFromPath(path.join(app.getAppPath(), 'assets/thumbnail_control/fullscreen.png')),
+        //   click: () => mainWindow?.webContents.send('thumbnail-control', 'fullscreen')
+        // }
       ]
     };
 

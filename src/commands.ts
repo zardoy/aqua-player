@@ -206,6 +206,17 @@ export const commands: Command[] = [
     description: 'Trigger an error to test the error boundary',
     action: () => { throw new Error('Test error for debugging purposes'); },
     category: 'Debug'
+  },
+  {
+    id: 'boss-mode',
+    name: 'Boss Mode (Minimize & Pause)',
+    description: 'Minimize the window and pause playback',
+    action: () => {
+      window.electronAPI.minimizeWindow();
+      videoActions.pause();
+    },
+    category: 'Window',
+    keybind: { code: 'KeyB' }
   }
 ];
 
