@@ -14,6 +14,7 @@ export const deafultSettings = {
     controls__wheelVolumeControl: true,
     // TODO
     controls__thumbnailControl: true,
+    enableFileAssociations: false,
 }
 
 export type AppSettings = typeof deafultSettings;
@@ -42,4 +43,7 @@ export const settingsUi: Partial<Record<keyof AppSettings, boolean | {
     // Hide firstRun and volume from settings UI
     app__firstRun: false,
     player__volume: false,
+    enableFileAssociations: {
+        tip: 'Enable file associations for .mpv files.',
+    },
 }

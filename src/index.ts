@@ -4,6 +4,7 @@ import * as fs from 'fs';
 import { pathToFileURL } from 'url';
 import { setupIpcHandlers } from './ipcHandlers';
 import { loadSettingsFromDisk } from './ipcHandlers/settingsHandlers';
+import { setupWindowsFileAssociations } from './ipcHandlers/fileAssociationHandler';
 import WindowKeeper from 'electron-window-keeper'
 import { updateElectronApp, UpdateSourceType } from 'update-electron-app';
 import electronLog from 'electron-log';
@@ -177,7 +178,13 @@ const initializeIpcHandlers = () => {
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
-app.whenReady().then(() => {
+app.whenReady().then(async () => {
+  // Load settings first
+  const settings = await loadSettingsFromDisk();
+
+  // Set up file associations based on settings
+  await setupWindowsFileAssociations(settings);
+
   // Handle custom protocol for local files
   protocol.handle('local-file', (req) => {
     let filePath = req.url.replace('local-file://', '');
@@ -195,6 +202,12 @@ app.whenReady().then(() => {
   });
 
   createWindow();
+});
+
+// Listen for settings changes
+ipcMain.on('settings-updated', async (_event, settings) => {
+  // Update file associations when settings change
+  await setupWindowsFileAssociations(settings);
 });
 
 // Quit when all windows are closed, except on macOS. There, it's common
