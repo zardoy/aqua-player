@@ -14,6 +14,9 @@ import GlobalListeners from './components/GlobalListeners';
 import { Toaster, toast } from 'sonner';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import PlaylistSidebar from './components/PlaylistSidebar';
+import FileHistoryPanel from './components/FileHistoryPanel';
+import CommandPalette from './components/CommandPalette';
+import FileAssociationDialog from './components/FileAssociationDialog';
 import InitialSetupDialog from './components/InitialSetupDialog';
 
 const VideoPlayer = () => {
@@ -36,6 +39,12 @@ const VideoPlayer = () => {
         videoActions.setVolume(settings.player__volume / 100);
       }
     });
+
+    // Load file history from storage
+    videoActions.loadHistoryFromStorage();
+
+    // Load file from query string if present
+    videoActions.loadFromQueryString();
   }, []);
 
   // Handle thumbnail control events
@@ -211,6 +220,22 @@ const VideoPlayer = () => {
 
           {/* Playlist Sidebar */}
           <PlaylistSidebar />
+
+          {/* File History Panel */}
+          <FileHistoryPanel />
+
+                    {/* Command Palette */}
+          <CommandPalette
+            isOpen={snap.isCommandPaletteOpen}
+            onClose={() => videoActions.toggleCommandPalette()}
+          />
+
+          {/* File Association Dialog */}
+          <AnimatePresence>
+            {snap.isFileAssociationDialogOpen && (
+              <FileAssociationDialog onClose={() => videoActions.toggleFileAssociationDialog()} />
+            )}
+          </AnimatePresence>
         </div>
       </div>
     </ErrorBoundary>

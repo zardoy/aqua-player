@@ -1,6 +1,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { FaTimes } from 'react-icons/fa';
+import { ErrorBoundary } from '../ErrorBoundary';
 
 interface ModalProps {
   title: string;
@@ -34,7 +35,9 @@ const Modal: React.FC<ModalProps> = ({ title, onClose, children, showCloseButton
           )}
         </div>
         <div className="settings-content">
-          {children}
+          <ErrorBoundary>
+            {children}
+          </ErrorBoundary>
         </div>
       </motion.div>
     </motion.div>

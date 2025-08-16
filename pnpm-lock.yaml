@@ -35,6 +35,9 @@ importers:
       node-mpv:
         specifier: ^2.0.0-beta.2
         version: 2.0.0-beta.2
+      rage-edit:
+        specifier: ^1.2.0
+        version: 1.2.0
       react:
         specifier: ^19.1.1
         version: 19.1.1
@@ -3141,6 +3144,9 @@ packages:
   quick-lru@5.1.1:
     resolution: {integrity: sha512-WuyALRjWPDGtt/wzJiadO5AXY+8hZ80hVpe6MyivgraREW751X3SbhRvG3eLKOYN+8VEvqLcf3wdnt44Z4S4SA==}
     engines: {node: '>=10'}
+
+  rage-edit@1.2.0:
+    resolution: {integrity: sha512-0RspBRc2s6We4g7hRCvT5mu7YPEnfjvQK8Tt354a2uUNJCMC7MKLvo/1mLvHUCQ/zbP6siQyp5VRZN7UCpMFZg==}
 
   random-path@0.1.2:
     resolution: {integrity: sha512-4jY0yoEaQ5v9StCl5kZbNIQlg1QheIDBrdkDn53EynpPb9FgO6//p3X/tgMnrC45XN6QZCzU1Xz/+pSSsJBpRw==}
@@ -7844,6 +7850,8 @@ snapshots:
   queue-microtask@1.2.3: {}
 
   quick-lru@5.1.1: {}
+
+  rage-edit@1.2.0: {}
 
   random-path@0.1.2:
     dependencies:

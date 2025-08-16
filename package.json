@@ -57,6 +57,7 @@
     "electron-window-keeper": "^0.0.2",
     "framer-motion": "^12.23.12",
     "node-mpv": "^2.0.0-beta.2",
+    "rage-edit": "^1.2.0",
     "react": "^19.1.1",
     "react-dom": "^19.1.1",
     "react-icons": "^5.5.0",

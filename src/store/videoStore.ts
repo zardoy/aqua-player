@@ -63,6 +63,8 @@ export const videoState = proxy({
   showControls: true,
   isSettingsOpen: false,
   isKeymapDialogOpen: false,
+  isCommandPaletteOpen: false,
+  isFileAssociationDialogOpen: false,
 
   // Error handling
   hasError: false,
@@ -75,6 +77,11 @@ export const videoState = proxy({
   playlistFiles: [] as string[],
   viewedFiles: new Set<string>(),
   isPlaylistOpen: false,
+
+  // File history
+  fileHistory: [] as string[],
+  openedFiles: new Set<string>(),
+  isHistoryOpen: false,
 });
 globalThis.videoState = videoState
 
@@ -185,6 +192,13 @@ export const videoActions = {
         videoState.fileType = filePath.split('.').pop() || '';
         videoState.hasError = false;
         videoState.errorMessage = '';
+
+        // Add to file history and opened files
+        videoActions.addToHistory(filePath);
+        videoState.openedFiles.add(filePath);
+
+        // Update query string
+        videoActions.updateQueryString(filePath);
 
         // Update playlist with files from the same folder
         const lastSeparatorIndex = Math.max(
@@ -372,12 +386,71 @@ export const videoActions = {
   toggleKeymapDialog: () => {
     videoState.isKeymapDialogOpen = !videoState.isKeymapDialogOpen;
   },
+  toggleCommandPalette: () => {
+    videoState.isCommandPaletteOpen = !videoState.isCommandPaletteOpen;
+  },
+  toggleFileAssociationDialog: () => {
+    videoState.isFileAssociationDialogOpen = !videoState.isFileAssociationDialogOpen;
+  },
   toggleLoop: () => {
     videoState.isLooping = !videoState.isLooping;
   },
 
   togglePlaylist: () => {
     videoState.isPlaylistOpen = !videoState.isPlaylistOpen;
+  },
+
+  toggleHistory: () => {
+    videoState.isHistoryOpen = !videoState.isHistoryOpen;
+  },
+
+  // File history management
+  addToHistory: (filePath: string) => {
+    // Remove if already exists
+    videoState.fileHistory = videoState.fileHistory.filter(f => f !== filePath);
+    // Add to beginning
+    videoState.fileHistory.unshift(filePath);
+    // Keep only last 50 files
+    videoState.fileHistory = videoState.fileHistory.slice(0, 50);
+    // Save to localStorage
+    localStorage.setItem('aqua-player-file-history', JSON.stringify(videoState.fileHistory));
+  },
+
+  loadHistoryFromStorage: () => {
+    try {
+      const stored = localStorage.getItem('aqua-player-file-history');
+      if (stored) {
+        videoState.fileHistory = JSON.parse(stored);
+        // Also load opened files
+        videoState.openedFiles = new Set(videoState.fileHistory);
+      }
+    } catch (error) {
+      console.error('Failed to load file history:', error);
+    }
+  },
+
+  // Query string management
+  updateQueryString: (filePath: string) => {
+    const url = new URL(window.location.href);
+    url.searchParams.set('file', encodeURIComponent(filePath));
+    window.history.replaceState({}, '', url);
+  },
+
+  loadFromQueryString: () => {
+    const url = new URL(window.location.href);
+    const filePath = url.searchParams.get('file');
+    const time = url.searchParams.get('time');
+    if (filePath) {
+      try {
+        const decodedPath = decodeURIComponent(filePath);
+        videoActions.loadFilePath(decodedPath);
+        if (time) {
+          videoActions.setCurrentTime(parseFloat(time));
+        }
+      } catch (error) {
+        console.error('Failed to load file from query string:', error);
+      }
+    }
   },
 
   // Error handling

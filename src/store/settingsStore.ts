@@ -55,7 +55,7 @@ export const getSettingsCategories = (): SettingsCategory[] => {
 
     // Determine setting type and options
     const type = typeof defaultValue === 'boolean' ? 'boolean' :
-                 Array.isArray(uiConfig.choices) ? 'select' : 'string';
+                 Array.isArray(uiConfig?.choices) ? 'select' : 'string';
 
     // Add setting to category
     categories.get(category)!.settings.push({
@@ -63,9 +63,9 @@ export const getSettingsCategories = (): SettingsCategory[] => {
       label,
       value: settingsState[key as keyof AppSettings],
       type,
-      choices: uiConfig.choices,
-      tip: uiConfig.tip,
-      requiresRestart: uiConfig.requiresRestart,
+      choices: uiConfig?.choices,
+      tip: uiConfig?.tip,
+      requiresRestart: uiConfig?.requiresRestart,
     });
   });
 

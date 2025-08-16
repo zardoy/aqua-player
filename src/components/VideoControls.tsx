@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useSnapshot } from 'valtio';
-import { FaPlay, FaPause, FaVolumeUp, FaVolumeDown, FaVolumeMute, FaExpand, FaFolder, FaCog, FaRedo, FaList } from 'react-icons/fa';
+import { FaPlay, FaPause, FaVolumeUp, FaVolumeDown, FaVolumeMute, FaExpand, FaFolder, FaCog, FaRedo, FaList, FaHistory } from 'react-icons/fa';
 import { MdSubtitles } from 'react-icons/md';
 import { videoState, videoActions } from '../store/videoStore';
 import { useSettings } from '../store/settingsStore';
@@ -12,7 +12,7 @@ interface VideoControlsProps {
   videoRef: React.RefObject<HTMLVideoElement>;
 }
 
-type ToolbarItemType = 'playPause' | 'loop' | 'playlist' | 'volumeBar' | 'timeDisplay' | 'title' | 'resolution' | 'networkIndicator' | 'subtitles' | 'openFile' | 'settings' | 'fullscreen';
+type ToolbarItemType = 'playPause' | 'loop' | 'playlist' | 'history' | 'volumeBar' | 'timeDisplay' | 'title' | 'resolution' | 'networkIndicator' | 'subtitles' | 'openFile' | 'settings' | 'fullscreen';
 
 interface ToolbarConfig {
   left: ToolbarItemType[];
@@ -35,17 +35,6 @@ const VideoControlsVisible: React.FC<VideoControlsProps> = ({
     videoActions.setProgress(progress);
   };
 
-  // Handle volume bar input
-  const handleVolumeBarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const volume = parseFloat(e.target.value);
-    videoActions.setVolume(volume);
-
-    // Update volume bar color
-    const volumeBar = e.target;
-    const percentage = (volume * 100) + '%';
-    volumeBar.style.setProperty('--volume-progress', percentage);
-  };
-
   // Update seek bar color
   useEffect(() => {
     const seekBar = seekBarRef.current;
@@ -66,59 +55,14 @@ const VideoControlsVisible: React.FC<VideoControlsProps> = ({
     }
   }, [snap.isMuted, snap.volume]);
 
-  // Wheel volume control
-  useEffect(() => {
-    if (!settings.controls__wheelVolumeControl) return;
-
-    const handleWheel = (e: WheelEvent) => {
-      // Prevent wheel events when hovering over controls
-      const target = e.target as HTMLElement;
-      if (target.closest('.video-controls')) return;
-
-      e.preventDefault();
-      const delta = e.deltaY > 0 ? -0.05 : 0.05;
-      const newVolume = Math.max(0, Math.min(1, snap.volume + delta));
-      videoActions.setVolume(newVolume);
-    };
-
-    window.addEventListener('wheel', handleWheel, { passive: false });
-    return () => window.removeEventListener('wheel', handleWheel);
-  }, [snap.volume]);
-
-  const formatTime = (seconds: number) => {
-    const mins = Math.floor(seconds / 60);
-    const secs = Math.floor(seconds % 60);
-    return `${mins}:${secs.toString().padStart(2, '0')}`;
-  };
-
-  const handleTitleClick = () => {
-    if (snap.currentFile) {
-      window.electronAPI.openFileInExplorer(snap.currentFile);
-    }
-  };
-
-  const getDisplayTitle = () => {
-    if (!snap.currentFile) return '';
-    const fileName = snap.currentFile.split(/[/\\]/).slice(-1)[0] || '';
-    return fileName.replace(/\.[^/.]+$/, '');
-  };
-
-  const getFullPath = () => {
-    if (!snap.currentFile) return '';
-    return snap.currentFile.replace(/\\/g, '/');
-  };
-
   // Toolbar configuration
   const toolbarConfig: ToolbarConfig = {
-    left: ['playPause', 'volumeBar', 'timeDisplay', 'title', 'resolution', 'loop', 'playlist'],
+    left: ['playPause', 'volumeBar', 'timeDisplay', 'title', 'resolution', 'loop', 'playlist', 'history'],
     right: ['networkIndicator', 'subtitles', 'openFile', 'settings', 'fullscreen']
   };
 
 
-  const toolbarProps = {
-    volumeBarRef,
-    onVolumeBarChange: handleVolumeBarChange,
-  }
+  const toolbarProps = {}
 
   return (
     <motion.div
@@ -169,18 +113,111 @@ const VideoControlsVisible: React.FC<VideoControlsProps> = ({
   );
 };
 
+const VideoControls: React.FC<VideoControlsProps> = (props) => {
+  const snap = useSnapshot(videoState);
+  const settings = useSettings();
+
+  // Update video resolution when video metadata is available
+  useEffect(() => {
+    const { videoRef } = props;
+    const video = videoRef.current;
+    if (!video) return;
+
+    const handleCanPlay = () => {
+      const videoWidth = video.videoWidth;
+      const videoHeight = video.videoHeight;
+      if (videoWidth && videoHeight) {
+        videoState.videoResolutionDisplay = videoWidth === 3840 ? '4k' : videoWidth === 1920 ? '1080p' : videoWidth === 1280 ? '720p' : videoWidth === 854 ? '480p' : videoWidth === 640 ? '360p' : `${videoWidth}p`;
+      }
+    };
+
+    video.addEventListener('canplay', handleCanPlay);
+    return () => video.removeEventListener('canplay', handleCanPlay);
+  }, [props.videoRef]);
+
+  // Handle mouse buttons for playlist navigation
+  useEffect(() => {
+    const handleMouseButton = (e: MouseEvent) => {
+      if (e.button === 3) { // Mouse4 (back)
+        videoActions.loadPreviousFile();
+      } else if (e.button === 4) { // Mouse5 (forward)
+        videoActions.loadNextFile();
+      }
+    };
+
+    window.addEventListener('mouseup', handleMouseButton);
+    return () => window.removeEventListener('mouseup', handleMouseButton);
+  }, []);
+
+  useEffect(() => {
+    const { videoRef } = props;
+    const video = videoRef.current;
+    if (!video) return;
+
+    const handleEnded = () => {
+      if (videoState.currentFile) {
+        videoActions.markFileAsViewed(videoState.currentFile);
+      }
+    };
+
+    const handleTimeUpdate = () => {
+      if (!video || !videoState.currentFile) return;
+
+      // Only mark as viewed if video is longer than 5 seconds and we've watched 80%
+      if (video.duration > 5 && (video.currentTime / video.duration) >= 0.8) {
+        handleEnded();
+      }
+    };
+
+    video.addEventListener('timeupdate', handleTimeUpdate);
+    video.addEventListener('ended', handleEnded);
+    return () => {
+      video.removeEventListener('timeupdate', handleTimeUpdate);
+      video.removeEventListener('ended', handleEnded);
+    };
+  }, [props.videoRef]);
+
+  // Wheel volume control
+  useEffect(() => {
+    if (!settings.controls__wheelVolumeControl) return;
+
+    const handleWheel = (e: WheelEvent) => {
+      // Prevent wheel events when hovering over controls
+      const target = e.target as HTMLElement;
+      let hasScrollableParent = false
+      let currentElement = target;
+      while (currentElement.parentElement) {
+        if (currentElement.scrollHeight > currentElement.clientHeight) {
+          hasScrollableParent = true;
+          break;
+        }
+        currentElement = currentElement.parentElement;
+      }
+      if (hasScrollableParent) return;
+
+      e.preventDefault();
+      const delta = e.deltaY > 0 ? -0.05 : 0.05;
+      const newVolume = Math.max(0, Math.min(1, snap.volume + delta));
+      videoActions.setVolume(newVolume);
+    };
+
+    window.addEventListener('wheel', handleWheel, { passive: false });
+    return () => window.removeEventListener('wheel', handleWheel);
+  }, [snap.volume]);
+
+  return (
+    <AnimatePresence>
+      {props.showControls && <VideoControlsVisible {...props} />}
+    </AnimatePresence>
+  );
+};
+
 interface ToolbarItemProps {
   type: ToolbarItemType;
-  videoResolution?: string;
-  volumeBarRef?: React.RefObject<HTMLInputElement>;
-  onVolumeBarChange?: (e: React.ChangeEvent<HTMLInputElement>) => void;
 }
 
 const ToolbarItem: React.FC<ToolbarItemProps> = ({
   type,
-  videoResolution,
-  volumeBarRef,
-  onVolumeBarChange,
 }) => {
   const snap = useSnapshot(videoState);
 
@@ -258,9 +295,9 @@ const ToolbarItem: React.FC<ToolbarItemProps> = ({
       ) : null;
 
     case 'resolution':
-      return videoResolution ? (
+      return snap.videoResolutionDisplay ? (
         <div className="resolution-badge">
-          {videoResolution}
+          {snap.videoResolutionDisplay}
         </div>
       ) : null;
 
@@ -284,6 +321,18 @@ const ToolbarItem: React.FC<ToolbarItemProps> = ({
           title="Toggle Playlist (P)"
         >
           <FaList />
+        </button>
+      );
+
+    case 'history':
+      return (
+        <button
+          onClick={() => videoActions.toggleHistory()}
+          className={`control-button ${!snap.isHistoryOpen ? 'inactive' : ''}`}
+          tabIndex={-1}
+          title="Toggle File History"
+        >
+          <FaHistory />
         </button>
       );
 
@@ -332,76 +381,6 @@ const ToolbarItem: React.FC<ToolbarItemProps> = ({
     default:
       return null;
   }
-};
-
-
-
-const VideoControls: React.FC<VideoControlsProps> = (props) => {
-  // Update video resolution when video metadata is available
-  useEffect(() => {
-    const { videoRef } = props;
-    const video = videoRef.current;
-    if (!video) return;
-
-    const handleCanPlay = () => {
-      const videoWidth = video.videoWidth;
-      const videoHeight = video.videoHeight;
-      if (videoWidth && videoHeight) {
-        videoState.videoResolutionDisplay = videoWidth === 3840 ? '4k' : videoWidth === 1920 ? '1080p' : videoWidth === 1280 ? '720p' : videoWidth === 854 ? '480p' : videoWidth === 640 ? '360p' : `${videoWidth}p`;
-      }
-    };
-
-    video.addEventListener('canplay', handleCanPlay);
-    return () => video.removeEventListener('canplay', handleCanPlay);
-  }, [props.videoRef]);
-
-  // Handle mouse buttons for playlist navigation
-  useEffect(() => {
-    const handleMouseButton = (e: MouseEvent) => {
-      if (e.button === 3) { // Mouse4 (back)
-        videoActions.loadPreviousFile();
-      } else if (e.button === 4) { // Mouse5 (forward)
-        videoActions.loadNextFile();
-      }
-    };
-
-    window.addEventListener('mouseup', handleMouseButton);
-    return () => window.removeEventListener('mouseup', handleMouseButton);
-  }, []);
-
-  useEffect(() => {
-    const { videoRef } = props;
-    const video = videoRef.current;
-    if (!video) return;
-
-    const handleEnded = () => {
-      if (videoState.currentFile) {
-        videoActions.markFileAsViewed(videoState.currentFile);
-      }
-    };
-
-    const handleTimeUpdate = () => {
-      if (!video || !videoState.currentFile) return;
-
-      // Only mark as viewed if video is longer than 5 seconds and we've watched 80%
-      if (video.duration > 5 && (video.currentTime / video.duration) >= 0.8) {
-        handleEnded();
-      }
-    };
-
-    video.addEventListener('timeupdate', handleTimeUpdate);
-    video.addEventListener('ended', handleEnded);
-    return () => {
-      video.removeEventListener('timeupdate', handleTimeUpdate);
-      video.removeEventListener('ended', handleEnded);
-    };
-  }, [props.videoRef]);
-
-  return (
-    <AnimatePresence>
-      {props.showControls && <VideoControlsVisible {...props} />}
-    </AnimatePresence>
-  );
 };
 
 export default VideoControls;

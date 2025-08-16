@@ -4,6 +4,7 @@ import * as fs from 'fs';
 import { pathToFileURL } from 'url';
 import { setupIpcHandlers } from './ipcHandlers';
 import { loadSettingsFromDisk } from './ipcHandlers/settingsHandlers';
+import { setupWindowsFileAssociations } from './ipcHandlers/fileAssociationHandler';
 import WindowKeeper from 'electron-window-keeper'
 import { updateElectronApp, UpdateSourceType } from 'update-electron-app';
 import electronLog from 'electron-log';
@@ -32,10 +33,10 @@ if (require('electron-squirrel-startup')) {
 let mainWindow: BrowserWindow | null = null;
 
 // Ensure single instance to handle file open events
-const gotLock = app.requestSingleInstanceLock();
-if (!gotLock) {
-  app.quit();
-}
+// const gotLock = app.requestSingleInstanceLock();
+// if (!gotLock) {
+//   app.quit();
+// }
 
 app.on('second-instance', (_event, argv) => {
   if (!mainWindow) return;
@@ -75,7 +76,6 @@ const createWindow = (): void => {
       webSecurity: false,
     },
     backgroundColor: '#121212',
-    show: false,
     frame: false, // Make window borderless
     titleBarStyle: 'hidden',
     titleBarOverlay: {
@@ -110,12 +110,6 @@ const createWindow = (): void => {
   });
 
 
-
-  // Show window when ready to avoid flickering
-  mainWindow.once('ready-to-show', () => {
-    mainWindow?.show();
-  });
-
   // Open the DevTools in development mode
   if (process.env.NODE_ENV === 'development') {
     mainWindow.webContents.openDevTools();
@@ -143,11 +137,11 @@ const createWindow = (): void => {
           icon: nativeImage.createFromPath(path.join(app.getAppPath(), 'assets/thumbnail_control/next.png')),
           click: () => mainWindow?.webContents.send('thumbnail-control', 'next')
         },
-        {
-          tooltip: 'Toggle Fullscreen',
-          icon: nativeImage.createFromPath(path.join(app.getAppPath(), 'assets/thumbnail_control/fullscreen.png')),
-          click: () => mainWindow?.webContents.send('thumbnail-control', 'fullscreen')
-        }
+        // {
+        //   tooltip: 'Toggle Fullscreen',
+        //   icon: nativeImage.createFromPath(path.join(app.getAppPath(), 'assets/thumbnail_control/fullscreen.png')),
+        //   click: () => mainWindow?.webContents.send('thumbnail-control', 'fullscreen')
+        // }
       ]
     };
 
@@ -177,7 +171,13 @@ const initializeIpcHandlers = () => {
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
-app.whenReady().then(() => {
+app.whenReady().then(async () => {
+  // Load settings first
+  const settings = await loadSettingsFromDisk();
+
+  // Set up file associations based on settings
+  await setupWindowsFileAssociations(settings);
+
   // Handle custom protocol for local files
   protocol.handle('local-file', (req) => {
     let filePath = req.url.replace('local-file://', '');
@@ -195,6 +195,12 @@ app.whenReady().then(() => {
   });
 
   createWindow();
+});
+
+// Listen for settings changes
+ipcMain.on('settings-updated', async (_event, settings) => {
+  // Update file associations when settings change
+  await setupWindowsFileAssociations(settings);
 });
 
 // Quit when all windows are closed, except on macOS. There, it's common

@@ -17,6 +17,7 @@ export const deafultSettings = {
 
     remoteUI__enabled: false,
     remoteUI__password: 'aqua123',
+    enableFileAssociations: false,
 }
 
 export type AppSettings = typeof deafultSettings;
@@ -51,4 +52,7 @@ export const settingsUi: Partial<Record<keyof AppSettings, boolean | {
     // Hide firstRun and volume from settings UI
     app__firstRun: false,
     player__volume: false,
+    enableFileAssociations: {
+        tip: 'Enable file associations for .mpv files.',
+    },
 }
