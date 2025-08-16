@@ -1,4 +1,4 @@
-import { videoActions } from '../store/videoStore';
+import { defaultKeymap } from '../commands';
 
 export interface KeymapAction {
   code: AllKeyCodesWithoutModifiers;
@@ -10,28 +10,8 @@ export interface KeymapAction {
   altKey?: boolean;
 }
 
-export const defaultKeymap: KeymapAction[] = [
-  { code: 'Space', description: 'Play/Pause', action: videoActions.togglePlay },
-  { code: 'ArrowRight', description: 'Seek forward 10s', action: () => videoActions.seekForward(10) },
-  { code: 'ArrowLeft', description: 'Seek backward 10s', action: () => videoActions.seekBackward(10) },
-  { code: 'ArrowUp', description: 'Increase volume', action: () => videoActions.increaseVolume(0.1) },
-  { code: 'ArrowDown', description: 'Decrease volume', action: () => videoActions.decreaseVolume(0.1) },
-  { code: 'KeyM', description: 'Mute/Unmute', action: videoActions.toggleMute },
-  { code: 'KeyF', description: 'Toggle fullscreen', action: videoActions.toggleFullScreen },
-  { code: 'Period', description: 'Next frame', action: videoActions.nextFrame },
-  { code: 'Comma', description: 'Previous frame', action: videoActions.previousFrame },
-  { code: 'KeyV', description: 'Toggle subtitles', action: videoActions.toggleSubtitles },
-  { code: 'KeyA', description: 'Next audio track', action: videoActions.nextAudioTrack },
-  { code: 'KeyA', description: 'Previous audio track', action: videoActions.previousAudioTrack, shiftKey: true },
-  { code: 'Slash', description: 'Show keymap', action: videoActions.toggleKeymapDialog, shiftKey: true },
-  { code: 'Equal', description: 'Increase playback rate', action: videoActions.increasePlaybackRate },
-  { code: 'Minus', description: 'Decrease playback rate', action: videoActions.decreasePlaybackRate },
-  { code: 'Digit0', description: 'Reset playback rate', action: videoActions.resetPlaybackRate },
-  { code: 'KeyO', description: 'Open file', action: videoActions.loadFile },
-  { code: 'KeyP', description: 'Toggle playlist', action: videoActions.togglePlaylist },
-  { code: 'KeyQ', description: 'Quit', action: () => window.electronAPI.quit(), ctrlKey: true, },
-  { code: 'KeyW', description: 'Close window', action: () => window.electronAPI.closeWindow(), ctrlKey: true, },
-];
+// Export the keymap from commands.ts
+export { defaultKeymap };
 
 const FOCUSABLE = 'input:not([type="range"]):not([type="slider"]), textarea, select, [contenteditable="true"]';
 export function setupKeymap() {

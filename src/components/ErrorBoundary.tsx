@@ -40,8 +40,13 @@ export class ErrorBoundary extends Component<Props, State> {
             padding: '20px',
             borderRadius: '8px',
             maxWidth: '80%',
+            maxHeight: '80%',
             textAlign: 'center',
-            zIndex: 9999,
+            zIndex: 10001,
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
           }}
         >
           <h3 style={{ margin: '0 0 10px 0', color: '#fff' }}>Something went wrong</h3>
