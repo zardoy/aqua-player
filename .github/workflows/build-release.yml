@@ -40,6 +40,9 @@ jobs:
     - name: Install dependencies
       run: pnpm install --frozen-lockfile
 
+    - name: Build remote UI
+      run: pnpm run build:remote-ui
+
     - name: Prepare build metadata
       shell: bash
       run: node prepare.mjs ${{ github.run_number }}
@@ -93,6 +96,9 @@ jobs:
 
     - name: Install dependencies
       run: pnpm install --frozen-lockfile
+
+    - name: Build remote UI
+      run: pnpm run build:remote-ui
 
     - name: Prepare build metadata
       shell: bash
