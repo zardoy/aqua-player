@@ -193,7 +193,7 @@ jobs:
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
         asset_path: ${{ env.WIN_FILE }}
-        asset_name: Aqua-Player-${{ steps.package-version.outputs.version }}-Setup.exe
+        asset_name: Aqua-Player-0.0.0-alpha.${{ github.run_number }}-Setup.exe
         asset_content_type: application/octet-stream
 
     - name: Upload macOS Release Asset
@@ -203,5 +203,5 @@ jobs:
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
         asset_path: ${{ env.MAC_FILE }}
-        asset_name: aqua-player-${{ steps.package-version.outputs.version }}-darwin-arm64.dmg
+        asset_name: aqua-player-0.0.0-alpha.${{ github.run_number }}-darwin-arm64.dmg
         asset_content_type: application/octet-stream

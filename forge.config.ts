@@ -98,7 +98,8 @@ const config: ForgeConfig = {
     new MakerSquirrel({
       name: 'aqua-player',
       setupIcon: './assets/icon.ico',
-      iconUrl: 'https://url/to/icon.ico',
+      iconUrl: 'https://github.com/zardoy/aqua-player/raw/main/assets/icon.ico',
+      setupExe: 'Aqua-Player-Setup.exe',
     }),
     // new MakerZIP({}, ['darwin']),
     new MakerDMG({
@@ -114,7 +115,7 @@ const config: ForgeConfig = {
         owner: 'zardoy',
         name: 'aqua-player',
       },
-      draft: true,
+      draft: false,
       prerelease: false,
     })
   ],
