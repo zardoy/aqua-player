@@ -2,7 +2,7 @@ import React, { useEffect } from 'react';
 import { useSnapshot } from 'valtio';
 import { toast } from 'sonner';
 import { videoState, videoActions } from '../store/videoStore';
-import { settingsActions } from '../store/settingsStore';
+import { settingsActions, useSettings } from '../store/settingsStore';
 import { electronMethods } from '../renderer/ipcRenderer';
 
 interface VideoDisplayProps {
@@ -11,6 +11,7 @@ interface VideoDisplayProps {
 
 const VideoDisplay: React.FC<VideoDisplayProps> = ({ videoRef }) => {
   const snap = useSnapshot(videoState);
+  const settings = useSettings();
 
   // Initialize video player
   useEffect(() => {
@@ -150,6 +151,32 @@ const VideoDisplay: React.FC<VideoDisplayProps> = ({ videoRef }) => {
       toast.error(errorMessage);
     }
   }, [snap.currentFile, videoRef]);
+
+  // Handle Ctrl+wheel zoom
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video) return;
+
+    const handleWheel = (e: WheelEvent) => {
+      if (e.ctrlKey && settings.controls__zoomEnabled) {
+        e.preventDefault();
+        const delta = e.deltaY > 0 ? -settings.controls__zoomSensitivity : settings.controls__zoomSensitivity;
+        videoActions.setZoomLevel(snap.zoomLevel + delta);
+      }
+    };
+
+    video.addEventListener('wheel', handleWheel, { passive: false });
+    return () => video.removeEventListener('wheel', handleWheel);
+  }, [snap.zoomLevel, settings.controls__zoomEnabled, settings.controls__zoomSensitivity, videoRef]);
+
+  // Apply zoom transform
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video) return;
+
+    video.style.transform = `scale(${snap.zoomLevel})`;
+    video.style.transformOrigin = 'center center';
+  }, [snap.zoomLevel, videoRef]);
 
   return (
     <video

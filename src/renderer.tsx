@@ -43,6 +43,9 @@ const VideoPlayer = () => {
     // Load file history from storage
     videoActions.loadHistoryFromStorage();
 
+    // Load positions from storage
+    videoActions.loadPositionsFromStorage();
+
     // Load file from query string if present
     videoActions.loadFromQueryString();
   }, []);

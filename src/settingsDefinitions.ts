@@ -12,6 +12,8 @@ export const deafultSettings = {
     app__autoUpdate: true,
 
     controls__wheelVolumeControl: true,
+    controls__zoomEnabled: true,
+    controls__zoomSensitivity: 0.1,
     // TODO
     controls__thumbnailControl: true,
     enableFileAssociations: false,
@@ -27,6 +29,12 @@ export const settingsUi: Partial<Record<keyof AppSettings, boolean | {
     player__savePosition: true,
     controls__wheelVolumeControl: {
         tip: 'Enable mouse wheel scrolling to control volume.',
+    },
+    controls__zoomEnabled: {
+        tip: 'Enable Ctrl+wheel zooming for video content.',
+    },
+    controls__zoomSensitivity: {
+        tip: 'Sensitivity of zoom controls (0.05 to 0.5).',
     },
     ui__showTime: {
         choices: ['always', 'never', 'ui-active'],

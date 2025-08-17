@@ -43,6 +43,13 @@ export const videoState = proxy({
   currentFile: '',
   fileType: '',
 
+  // Video zoom state
+  zoomLevel: 1,
+  zoomEnabled: true,
+
+  // Position memory
+  filePositions: {} as Record<string, number>,
+
   // Tracks
   videoTracks: [] as VideoTrack[],
   audioTracks: [] as AudioTrack[],
@@ -114,6 +121,11 @@ export const videoActions = {
   setCurrentTime: (time: number) => {
     videoState.currentTime = time;
     videoState.progress = videoState.duration > 0 ? time / videoState.duration : 0;
+    
+    // Save position every 5 seconds
+    if (videoState.currentFile && time > 0 && time % 5 < 1) {
+      videoActions.savePosition(videoState.currentFile, time);
+    }
   },
   seekForward: (seconds = 10) => {
     const newTime = Math.min(videoState.currentTime + seconds, videoState.duration);
@@ -170,6 +182,185 @@ export const videoActions = {
   },
   resetPlaybackRate: () => {
     videoState.playbackRate = 1;
+  },
+
+  // Zoom controls
+  setZoomLevel: (level: number) => {
+    const clampedLevel = Math.max(0.1, Math.min(5, level));
+    const oldLevel = videoState.zoomLevel;
+    videoState.zoomLevel = clampedLevel;
+    
+    // Show toast notification for significant zoom changes
+    if (Math.abs(clampedLevel - oldLevel) >= 0.2) {
+      try {
+        const { toast } = require('sonner');
+        toast.info(`Zoom: ${Math.round(clampedLevel * 100)}%`);
+      } catch (error) {
+        // Toast not available in this context
+      }
+    }
+  },
+  increaseZoom: (amount = 0.1) => {
+    if (videoState.zoomEnabled) {
+      videoActions.setZoomLevel(videoState.zoomLevel + amount);
+    }
+  },
+  decreaseZoom: (amount = 0.1) => {
+    if (videoState.zoomEnabled) {
+      videoActions.setZoomLevel(videoState.zoomLevel - amount);
+    }
+  },
+  resetZoom: () => {
+    videoActions.setZoomLevel(1);
+    // Show toast notification
+    try {
+      const { toast } = require('sonner');
+      toast.info('Zoom reset to 100%');
+    } catch (error) {
+      // Toast not available in this context
+    }
+  },
+  toggleZoom: () => {
+    videoState.zoomEnabled = !videoState.zoomEnabled;
+    if (!videoState.zoomEnabled) {
+      videoActions.resetZoom();
+    }
+    // Show toast notification
+    try {
+      const { toast } = require('sonner');
+      toast.info(`Zoom ${videoState.zoomEnabled ? 'enabled' : 'disabled'}`);
+    } catch (error) {
+      // Toast not available in this context
+    }
+  },
+
+  // Position memory
+  savePosition: (filePath: string, time: number) => {
+    if (filePath) {
+      // Check if position saving is enabled
+      try {
+        const { settingsState } = require('./store/settingsStore');
+        if (!settingsState.player__savePosition) {
+          return; // Don't save if disabled
+        }
+      } catch (error) {
+        // Settings not available, continue with saving
+      }
+      
+      const oldPosition = videoState.filePositions[filePath] || 0;
+      videoState.filePositions[filePath] = time;
+      
+      // Show toast notification for significant position saves (every 30 seconds)
+      if (Math.abs(time - oldPosition) >= 30) {
+        try {
+          const { toast } = require('sonner');
+          toast.info(`Position saved at ${Math.floor(time / 60)}:${Math.floor(time % 60).toString().padStart(2, '0')}`);
+        } catch (error) {
+          // Toast not available in this context
+        }
+      }
+      
+      // Save to localStorage
+      try {
+        const stored = localStorage.getItem('aqua-player-positions');
+        const positions = stored ? JSON.parse(stored) : {};
+        positions[filePath] = time;
+        localStorage.setItem('aqua-player-positions', JSON.stringify(positions));
+      } catch (error) {
+        console.error('Failed to save position:', error);
+      }
+    }
+  },
+  loadPosition: (filePath: string): number => {
+    if (!filePath) return 0;
+    
+    // Check if position saving is enabled
+    try {
+      const { settingsState } = require('./store/settingsStore');
+      if (!settingsState.player__savePosition) {
+        return 0; // Don't load if disabled
+      }
+    } catch (error) {
+      // Settings not available, continue with loading
+    }
+    
+    // Try to get from memory first
+    if (videoState.filePositions[filePath]) {
+      const position = videoState.filePositions[filePath];
+      // Show toast notification for restored position
+      try {
+        const { toast } = require('sonner');
+        toast.info(`Restored to ${Math.floor(position / 60)}:${Math.floor(position % 60).toString().padStart(2, '0')}`);
+      } catch (error) {
+        // Toast not available in this context
+      }
+      return position;
+    }
+    
+    // Try to get from localStorage
+    try {
+      const stored = localStorage.getItem('aqua-player-positions');
+      if (stored) {
+        const positions = JSON.parse(stored);
+        if (positions[filePath]) {
+          videoState.filePositions[filePath] = positions[filePath];
+          const position = positions[filePath];
+          // Show toast notification for restored position
+          try {
+            const { toast } = require('sonner');
+            toast.info(`Restored to ${Math.floor(position / 60)}:${Math.floor(position % 60).toString().padStart(2, '0')}`);
+          } catch (error) {
+            // Toast not available in this context
+          }
+          return position;
+        }
+      }
+    } catch (error) {
+      console.error('Failed to load position:', error);
+    }
+    
+    return 0;
+  },
+  loadPositionsFromStorage: () => {
+    try {
+      const stored = localStorage.getItem('aqua-player-positions');
+      if (stored) {
+        videoState.filePositions = JSON.parse(stored);
+      }
+    } catch (error) {
+      console.error('Failed to load positions from storage:', error);
+    }
+  },
+
+  // HTTP streaming support
+  loadStreamUrl: (url: string) => {
+    if (url && (url.startsWith('http://') || url.startsWith('https://'))) {
+      videoState.currentFile = url;
+      videoState.fileType = 'stream';
+      videoState.hasError = false;
+      videoState.errorMessage = '';
+      
+      // Add to file history
+      videoActions.addToHistory(url);
+      videoState.openedFiles.add(url);
+      
+      // Update query string
+      videoActions.updateQueryString(url);
+      
+      // Show toast notification
+      try {
+        const { toast } = require('sonner');
+        toast.success(`Loading stream: ${url}`);
+      } catch (error) {
+        // Toast not available in this context
+      }
+      
+      return url;
+    }
+    return null;
+  },
+  getCurrentSrc: (): string => {
+    return videoState.currentFile || '';
   },
 
   // Screen controls
@@ -243,6 +434,13 @@ export const videoActions = {
           }
           return false;
         });
+
+        // Load saved position for this file
+        const savedPosition = videoActions.loadPosition(filePath);
+        if (savedPosition > 0) {
+          // Set the progress to restore position
+          videoState.progress = savedPosition / (videoState.duration || 1);
+        }
 
         return filePath;
       }
