@@ -36,6 +36,8 @@ export const videoState = proxy({
   playbackRate: 1,
   isEnded: false,
   fps: 0, // Add FPS state
+  videoBitrate: 0,
+  videoCodec: '',
 
   // File state
   currentFile: '',
@@ -199,6 +201,19 @@ export const videoActions = {
 
         // Update query string
         videoActions.updateQueryString(filePath);
+
+        // Get video metadata (FPS, duration, etc.)
+        try {
+          const metadata = await electronMethods.getVideoMetadata(filePath);
+          if (metadata) {
+            videoState.fps = metadata.fps || 0;
+            videoState.duration = metadata.duration || 0;
+            videoState.videoBitrate = metadata.bitrate || 0;
+            videoState.videoCodec = metadata.codec || '';
+          }
+        } catch (metadataError) {
+          console.warn('Failed to get video metadata:', metadataError);
+        }
 
         // Update playlist with files from the same folder
         const lastSeparatorIndex = Math.max(

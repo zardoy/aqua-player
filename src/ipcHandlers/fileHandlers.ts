@@ -2,6 +2,7 @@ import { BrowserWindow, dialog, shell, ipcMain } from 'electron';
 import * as fs from 'fs';
 import * as path from 'path';
 import { AUDIO_EXTENSIONS, VIDEO_EXTENSIONS } from '../shared/constants';
+import { getFFprobePath } from '../utils/ffprobePath';
 
 export function setupFileHandlers(mainWindow: BrowserWindow) {
   const handlers = {
@@ -39,6 +40,42 @@ export function setupFileHandlers(mainWindow: BrowserWindow) {
       } catch (error) {
         console.error('Failed to read folder contents:', error);
         return [];
+      }
+    },
+
+    async getVideoMetadata(filePath: string) {
+      try {
+        const { exec } = require('child_process');
+        const util = require('util');
+        const execAsync = util.promisify(exec);
+
+        const { stdout } = await execAsync(`"${getFFprobePath()}" -v quiet -print_format json -show_format -show_streams "${filePath}"`);
+        const info = JSON.parse(stdout);
+
+        // Extract video stream info
+        const videoStream = info.streams.find((s: any) => s.codec_type === 'video');
+        const audioStream = info.streams.find((s: any) => s.codec_type === 'audio');
+
+        if (videoStream) {
+          const fps = videoStream.r_frame_rate ? eval(videoStream.r_frame_rate) : null;
+
+          return {
+            fps,
+            duration: parseFloat(info.format.duration),
+            width: videoStream.width,
+            height: videoStream.height,
+            codec: videoStream.codec_name,
+            bitrate: parseInt(info.format.bit_rate),
+            hasAudio: !!audioStream,
+            audioCodec: audioStream?.codec_name,
+            fileSize: parseInt(info.format.size)
+          };
+        }
+
+        return null;
+      } catch (error) {
+        console.error('Failed to get video metadata:', error);
+        return null;
       }
     }
   };

@@ -18,7 +18,8 @@ const config: ForgeConfig = {
     asar: true,
     icon: './assets/icon',
     extraResource: [
-      './assets/thumbnail_control'
+      './assets/thumbnail_control',
+      './dist/ffprobe'
     ],
     protocols: [
       {

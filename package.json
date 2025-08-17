@@ -7,10 +7,11 @@
   "scripts": {
     "start": "electron-forge start",
     "package": "electron-forge package",
-    "make": "electron-forge make",
+    "make": "npm run prepare-ffprobe && electron-forge make",
     "publish": "electron-forge publish",
     "lint": "eslint --ext .ts,.tsx .",
-    "postinstall": "electron-builder install-app-deps"
+    "postinstall": "electron-builder install-app-deps",
+    "prepare-ffprobe": "node scripts/prepare-ffprobe.js"
   },
   "keywords": [],
   "author": {
@@ -52,6 +53,8 @@
     "electron-squirrel-startup": "^1.0.1",
     "electron-updater": "^6.3.9",
     "electron-window-keeper": "^0.0.2",
+    "ffmpeg-static": "^5.2.0",
+    "ffprobe-static": "^3.1.0",
     "framer-motion": "^12.23.12",
     "node-mpv": "^2.0.0-beta.2",
     "rage-edit": "^1.2.0",
