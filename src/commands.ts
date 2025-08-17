@@ -1,5 +1,6 @@
 import { videoActions } from './store/videoStore';
 import type { AllKeyCodes } from './client/appKeymap';
+import { electronMethods } from './renderer/ipcRenderer';
 
 export interface Command {
   name?: string;
@@ -165,14 +166,14 @@ export const commands = makeCommands({
   app_quit: {
     name: 'Quit Application',
     description: 'Exit the application',
-    action: () => window.electronAPI.quit(),
+    action: () => electronMethods.quit(),
     category: 'Application',
     keybind: { code: 'KeyQ', ctrlKey: true }
   },
   window_close: {
     name: 'Close Window',
     description: 'Close the current window',
-    action: () => window.electronAPI.closeWindow(),
+    action: () => electronMethods.closeWindow(),
     category: 'Application',
     keybind: { code: 'KeyW', ctrlKey: true }
   },
@@ -192,7 +193,7 @@ export const commands = makeCommands({
     name: 'Boss Mode (Minimize & Pause)',
     description: 'Minimize the window and pause playback',
     action: () => {
-      window.electronAPI.minimizeWindow();
+      electronMethods.minimizeWindow();
       videoActions.pause();
     },
     category: 'Window',

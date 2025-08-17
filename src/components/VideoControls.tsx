@@ -6,6 +6,7 @@ import { MdSubtitles } from 'react-icons/md';
 import { videoState, videoActions } from '../store/videoStore';
 import { useSettings } from '../store/settingsStore';
 import VolumeSlider from './VolumeSlider';
+import { electronMethods } from '../renderer/ipcRenderer';
 
 interface VideoControlsProps {
   showControls: boolean;
@@ -240,7 +241,7 @@ const ToolbarItem: React.FC<ToolbarItemProps> = ({
 
   const handleTitleClick = () => {
     if (snap.currentFile) {
-      window.electronAPI.openFileInExplorer(snap.currentFile);
+      electronMethods.openFileInExplorer(snap.currentFile);
     }
   };
 

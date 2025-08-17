@@ -9,7 +9,7 @@ export function setupLogForwarding(mainWindow: BrowserWindow) {
         typeof a === 'string' ? a : util.inspect(a, { depth: 5, colors: false })
       );
       mainWindow.webContents.send('main-log', { level, args: formatted });
-    } catch {}
+    } catch { /* empty */ }
   };
 
   const original = {
@@ -42,4 +42,7 @@ export function setupLogForwarding(mainWindow: BrowserWindow) {
       sendLog('debug', args);
     };
   }
+
+  // Return empty handlers since this is just for log forwarding
+  return {};
 }

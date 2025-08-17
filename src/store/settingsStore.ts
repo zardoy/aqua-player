@@ -1,6 +1,7 @@
 import { proxy, useSnapshot } from 'valtio';
 import { noCase } from 'change-case';
 import { deafultSettings, AppSettings, settingsUi } from '../settingsDefinitions';
+import { electronMethods } from '../renderer/ipcRenderer';
 
 // Create a type for settings categories
 type SettingsCategory = {
@@ -90,7 +91,7 @@ export const settingsActions = {
   // Load settings from main process
   loadSettings: async () => {
     try {
-      const settings = await window.electronAPI.loadSettings();
+      const settings = await electronMethods.loadSettings();
       Object.assign(settingsState, settings);
       settingsState.isDirty = false;
       settingsState.error = null;
@@ -109,7 +110,7 @@ export const settingsActions = {
       delete (settings as any).isSaving;
       delete (settings as any).error;
 
-      await window.electronAPI.saveSettings(settings);
+      await electronMethods.saveSettings(settings);
       settingsState.isDirty = false;
       settingsState.error = null;
     } catch (error) {

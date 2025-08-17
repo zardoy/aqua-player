@@ -65,9 +65,9 @@ const VideoPlayer = () => {
           break;
       }
     };
-    window.electronAPI.on('thumbnail-control', handler);
+    window.ipcRenderer.on('thumbnail-control', handler);
     return () => {
-      window.electronAPI.off('thumbnail-control', handler);
+      window.ipcRenderer.off('thumbnail-control', handler);
     };
   }, []);
 
@@ -171,7 +171,7 @@ const VideoPlayer = () => {
             />
           )}
         </AnimatePresence>
-        <div className={`floating-time-container ${window.electronAPI.platform === 'win32' ? 'windows' : ''}`}>
+        <div className={`floating-time-container ${window.electronUtils.platform === 'win32' ? 'windows' : ''}`}>
           <div className="floating-time">{currentTime}</div>
         </div>
 

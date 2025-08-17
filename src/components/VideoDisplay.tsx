@@ -3,6 +3,7 @@ import { useSnapshot } from 'valtio';
 import { toast } from 'sonner';
 import { videoState, videoActions } from '../store/videoStore';
 import { settingsActions } from '../store/settingsStore';
+import { electronMethods } from '../renderer/ipcRenderer';
 
 interface VideoDisplayProps {
   videoRef: React.RefObject<HTMLVideoElement>;
@@ -29,7 +30,7 @@ const VideoDisplay: React.FC<VideoDisplayProps> = ({ videoRef }) => {
       const newVolume = video.volume;
       videoActions.setVolume(newVolume);
       // Save volume to settings
-      settingsActions.updateSetting('player.volume', Math.round(newVolume * 100));
+      settingsActions.updateSetting('player__volume', Math.round(newVolume * 100));
     };
     const handleEnded = () => {
       videoActions.pause();
@@ -70,7 +71,7 @@ const VideoDisplay: React.FC<VideoDisplayProps> = ({ videoRef }) => {
     }
 
     // Update progress bar on Windows
-    window.electronAPI.setProgressBar(snap.isPlaying, snap.progress);
+    electronMethods.updateProgressBar({ isPlaying: snap.isPlaying, progress: snap.progress });
   }, [snap.isPlaying, snap.progress, videoRef]);
 
   // Handle volume changes
@@ -109,7 +110,7 @@ const VideoDisplay: React.FC<VideoDisplayProps> = ({ videoRef }) => {
     try {
       // Set window title with full filename
       const fileName = snap.currentFile.split(/[/\\]/).pop() || '';
-      window.electronAPI.setWindowTitle(fileName);
+      electronMethods.updateWindowTitle(fileName);
 
       const fileUrl = snap.currentFile.startsWith('file://') ? snap.currentFile : `file://${snap.currentFile}`;
       video.src = fileUrl;

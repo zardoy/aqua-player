@@ -17,7 +17,7 @@ const FileHistoryPanel: React.FC = () => {
     <AnimatePresence>
       {snap.isHistoryOpen && (
         <motion.div
-          className={`playlist-sidebar ${window.electronAPI.platform === 'win32' ? 'windows' : ''}`}
+          className={`playlist-sidebar ${window.electronUtils.platform === 'win32' ? 'windows' : ''}`}
           initial={{ x: '100%' }}
           animate={{ x: 0 }}
           exit={{ x: '100%' }}

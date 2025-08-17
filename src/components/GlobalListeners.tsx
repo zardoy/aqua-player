@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { toast } from 'sonner';
 import { videoActions } from '../store/videoStore';
+import { electronMethods } from '../renderer/ipcRenderer';
 
 interface GlobalListenersProps {
   containerRef: React.RefObject<HTMLDivElement>;
@@ -29,7 +30,10 @@ const GlobalListeners: React.FC<GlobalListenersProps> = ({ containerRef, lastDra
         isDragging = true;
         startMouseX = e.screenX;
         startMouseY = e.screenY;
-        window.electronAPI.startWindowDrag(e.screenX, e.screenY);
+        electronMethods.startWindowDrag({
+          mouseX: e.screenX,
+          mouseY: e.screenY
+        });
       }
     };
 
@@ -39,13 +43,13 @@ const GlobalListeners: React.FC<GlobalListenersProps> = ({ containerRef, lastDra
       if (e.screenX === startMouseX && e.screenY === startMouseY) return;
 
       dragged = true;
-      window.electronAPI.moveWindow(
-        e.screenX,
-        e.screenY,
+      electronMethods.moveWindow({
+        mouseX: e.screenX,
+        mouseY: e.screenY,
         startBounds,
         startMouseX,
         startMouseY
-      );
+      })
     };
 
     const handleMouseUp = () => {
@@ -62,13 +66,13 @@ const GlobalListeners: React.FC<GlobalListenersProps> = ({ containerRef, lastDra
       startBounds = data.startBounds;
     };
 
-    window.electronAPI.on('window-drag-enabled', handleDragEnabled);
+    window.ipcRenderer.on('window-drag-enabled', handleDragEnabled);
     container.addEventListener('mousedown', handleMouseDown);
     window.addEventListener('mousemove', handleMouseMove);
     window.addEventListener('mouseup', handleMouseUp);
 
     return () => {
-      window.electronAPI.off('window-drag-enabled', handleDragEnabled);
+      window.ipcRenderer.off('window-drag-enabled', handleDragEnabled);
       container.removeEventListener('mousedown', handleMouseDown);
       window.removeEventListener('mousemove', handleMouseMove);
       window.removeEventListener('mouseup', handleMouseUp);
@@ -84,7 +88,7 @@ const GlobalListeners: React.FC<GlobalListenersProps> = ({ containerRef, lastDra
         const file = files[0];
 
         try {
-          const filePath = window.electronAPI.getFilePath(file);
+          const filePath = window.electronUtils.getFilePath(file);
           if (filePath) {
             videoActions.loadFilePath(filePath);
           }
@@ -115,9 +119,9 @@ const GlobalListeners: React.FC<GlobalListenersProps> = ({ containerRef, lastDra
         videoActions.loadFilePath(filePath);
       }
     };
-    window.electronAPI.on('open-file', handler);
+    window.ipcRenderer.on('open-file', handler);
     return () => {
-      window.electronAPI.off('open-file', handler);
+      window.ipcRenderer.off('open-file', handler);
     };
   }, []);
 

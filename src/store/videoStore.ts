@@ -1,3 +1,4 @@
+import { electronMethods } from '../renderer/ipcRenderer';
 import { AUDIO_EXTENSIONS, VIDEO_EXTENSIONS } from '../shared/constants';
 import { proxy } from 'valtio';
 
@@ -172,14 +173,13 @@ export const videoActions = {
   // Screen controls
   toggleFullScreen: () => {
     videoState.isFullScreen = !videoState.isFullScreen;
-    window.electronAPI.toggleFullscreen();
+    electronMethods.toggleFullscreen();
   },
 
   // File operations
   loadFile: async () => {
-    const result = await window.electronAPI.openFileDialog();
+    const result = await electronMethods.openFileDialog();
     if (!result.canceled && result.filePaths.length > 0) {
-      console.log('result', result)
       videoActions.loadFilePath(result.filePaths[0]);
     }
   },
@@ -207,7 +207,7 @@ export const videoActions = {
         );
         const folder = lastSeparatorIndex >= 0 ? filePath.slice(0, lastSeparatorIndex) : '';
         videoState.currentFolder = folder;
-        const files = await window.electronAPI.getFolderContents(folder);
+        const files = await electronMethods.getFolderContents(folder);
         console.log('files', files)
 
         // Determine if current file is video or audio
@@ -243,7 +243,7 @@ export const videoActions = {
     videoState.viewedFiles.add(filePath);
     // Persist metadata about watched videos
     try {
-      window.electronAPI.syncMetadata({
+      electronMethods.syncMetadata({
         watchedVideos: {
           [filePath]: { watchedAt: new Date().toISOString() }
         }
@@ -313,7 +313,7 @@ export const videoActions = {
   // Remote playback
   startRemoteServer: async () => {
     try {
-      const url = await window.electronAPI.startRemoteServer();
+      const url = await electronMethods.startRemoteServer();
       videoState.isRemoteServerRunning = true;
       videoState.remotePlaybackUrl = url;
       return url;
@@ -325,7 +325,7 @@ export const videoActions = {
   },
   stopRemoteServer: async () => {
     try {
-      await window.electronAPI.stopRemoteServer();
+      await electronMethods.stopRemoteServer();
       videoState.isRemoteServerRunning = false;
       videoState.remotePlaybackUrl = '';
     } catch (error) {
@@ -337,7 +337,7 @@ export const videoActions = {
   // AirPlay
   checkAirPlayAvailability: async () => {
     try {
-      const available = await window.electronAPI.checkAirPlayAvailability();
+      const available = await electronMethods.checkAirPlayAvailability();
       videoState.airPlayAvailable = available;
       return available;
     } catch (error) {
@@ -347,7 +347,7 @@ export const videoActions = {
   },
   getAirPlayDevices: async () => {
     try {
-      const devices = await window.electronAPI.getAirPlayDevices();
+      const devices = await electronMethods.getAirPlayDevices();
       videoState.airPlayDevices = devices;
       return devices;
     } catch (error) {
@@ -357,7 +357,7 @@ export const videoActions = {
   },
   startAirPlay: async (deviceName: string) => {
     try {
-      await window.electronAPI.startAirPlay(deviceName);
+      await electronMethods.startAirPlay(deviceName);
       videoState.isAirPlaying = true;
       videoState.currentAirPlayDevice = deviceName;
     } catch (error) {
@@ -367,7 +367,7 @@ export const videoActions = {
   },
   stopAirPlay: async () => {
     try {
-      await window.electronAPI.stopAirPlay();
+      await electronMethods.stopAirPlay();
       videoState.isAirPlaying = false;
       videoState.currentAirPlayDevice = '';
     } catch (error) {
@@ -444,6 +444,7 @@ export const videoActions = {
       try {
         const decodedPath = decodeURIComponent(filePath);
         videoActions.loadFilePath(decodedPath);
+        videoActions.pause()
         if (time) {
           videoActions.setCurrentTime(parseFloat(time));
         }
@@ -465,38 +466,13 @@ export const videoActions = {
 };
 globalThis.videoActions = videoActions;
 
-// Add TypeScript interface for the window.electronAPI
+// Add TypeScript interface for the window utilities
 declare global {
   interface Window {
-    electronAPI: {
+    ipcRenderer: Electron.IpcRenderer;
+    electronUtils: {
       platform: string;
-      openFileDialog: () => Promise<{ canceled: boolean; filePaths: string[] }>;
       getFilePath: (file: File) => string;
-      openFileInExplorer: (filePath: string) => Promise<void>;
-      minimizeWindow: () => void;
-      maximizeWindow: () => void;
-      closeWindow: () => void;
-      toggleFullscreen: () => void;
-      checkAirPlayAvailability: () => Promise<boolean>;
-      startAirPlay: (deviceName: string) => Promise<void>;
-      stopAirPlay: () => Promise<void>;
-      getAirPlayDevices: () => Promise<string[]>;
-      startRemoteServer: () => Promise<string>;
-      stopRemoteServer: () => Promise<void>;
-      getRemotePlaybackUrl: () => Promise<string>;
-      loadSettings: () => Promise<any>;
-      saveSettings: (settings: any) => Promise<boolean>;
-      startWindowDrag: (mouseX: number, mouseY: number) => void;
-      moveWindow: (mouseX: number, mouseY: number, startBounds: any, startMouseX: number, startMouseY: number) => void;
-      on: (channel: string, callback: (...args: any[]) => void) => void;
-      off: (channel: string, callback: (...args: any[]) => void) => void;
-      setWindowTitle: (title: string) => void;
-      setProgressBar: (isPlaying: boolean, progress: number) => void;
-      quit: () => void;
-      getFolderContents: (folderPath: string) => Promise<string[]>;
-      syncMetadata: (metadata: { watchedVideos?: { [key: string]: { watchedAt: string } } }) => void;
-      openDefaultAppsSettings: () => Promise<boolean>;
-      checkForUpdatesNow: () => Promise<boolean>;
     };
   }
 }
