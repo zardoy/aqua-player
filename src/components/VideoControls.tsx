@@ -58,8 +58,8 @@ const VideoControlsVisible: React.FC<VideoControlsProps> = ({
 
   // Toolbar configuration
   const toolbarConfig: ToolbarConfig = {
-    left: ['playPause', 'volumeBar', 'timeDisplay', 'title', 'resolution', 'zoomIndicator', 'loop', 'playlist', 'history'],
-    right: ['networkIndicator', 'subtitles', 'openFile', 'settings', 'fullscreen']
+    left: ['playPause', 'volumeBar', 'timeDisplay', 'title', 'resolution', 'loop', 'playlist', 'history'],
+    right: ['subtitles', 'openFile', 'settings', 'fullscreen']
   };
 
 
@@ -299,17 +299,6 @@ const ToolbarItem: React.FC<ToolbarItemProps> = ({
       return snap.videoResolutionDisplay ? (
         <div className="resolution-badge">
           {snap.videoResolutionDisplay}
-        </div>
-      ) : null;
-
-    case 'zoomIndicator':
-      return snap.zoomLevel !== 1 ? (
-        <div 
-          className="zoom-badge" 
-          title={`Zoom: ${Math.round(snap.zoomLevel * 100)}% (Click to reset)`}
-          onClick={() => videoActions.resetZoom()}
-        >
-          {Math.round(snap.zoomLevel * 100)}%
         </div>
       ) : null;
 

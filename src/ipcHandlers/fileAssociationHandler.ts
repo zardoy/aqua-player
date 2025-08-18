@@ -1,15 +1,11 @@
 import { app } from 'electron';
 import { Registry } from 'rage-edit';
 import { VIDEO_EXTENSIONS, APP_NAME, APP_ID } from '../shared/constants';
+import { AppSettings } from '../settingsDefinitions';
 
-interface Settings {
-    enableFileAssociations: boolean;
-    [key: string]: any;
-}
-
-export async function setupWindowsFileAssociations(settings: Settings) {
+export async function setupWindowsFileAssociations(settings: AppSettings) {
     if (process.platform !== 'win32') return;
-    if (!settings.enableFileAssociations) {
+    if (!settings.app__enableFileAssociations) {
         await removeWindowsFileAssociations();
         return;
     }

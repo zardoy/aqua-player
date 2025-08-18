@@ -38,8 +38,8 @@ const InitialSetupDialog: React.FC<InitialSetupDialogProps> = ({ onClose }) => {
             <label style={{ display: 'flex', alignItems: 'center', cursor: 'pointer' }}>
               <input
                 type="checkbox"
-                checked={settings.enableFileAssociations}
-                onChange={(e) => settingsActions.updateSetting('enableFileAssociations', e.target.checked)}
+                checked={settings.app__enableFileAssociations}
+                onChange={(e) => settingsActions.updateSetting('app__enableFileAssociations', e.target.checked)}
                 style={{ marginRight: '10px' }}
               />
               <div>
