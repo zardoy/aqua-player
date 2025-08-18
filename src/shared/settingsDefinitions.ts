@@ -2,6 +2,8 @@ export const deafultSettings = {
     player__savePosition: true,
     player__saveHistory: true,
     player__volume: 100,
+    player__loop: false,
+    player__autoPlay: true,
 
     ui__showTime: 'always' as 'always' | 'never' | 'ui-active',
 
@@ -11,11 +13,22 @@ export const deafultSettings = {
     app__firstRun: true,
     app__autoUpdate: true,
     app__enableFileAssociations: false,
+    app__ignoredOnSave: [] as string[],
 
     controls__wheelVolumeControl: true,
     controls__zoomEnabled: true,
     controls__zoomSensitivity: 0.1,
     controls__thumbnailControls: true,
+    controls__autoPlayOnSeek: false,
+    controls__shortSeekDistance: 1,
+    controls__longSeekDistance: 10,
+
+    // account__customServer: '', // https://aqua-player.zardoy.com/
+    // account__token: '',
+    // account__syncHistory: true,
+    // account__syncSettings: true,
+    // account__syncSettingsIgnore: [] as string[],
+    // account__syncKeybindingsIgnorePlatforms: [] as string[],
 }
 
 export type AppSettings = typeof deafultSettings;
@@ -26,6 +39,15 @@ export const settingsUi: Partial<Record<keyof AppSettings, boolean | {
     requiresRestart?: boolean;
 }>> = {
     player__savePosition: true,
+    controls__autoPlayOnSeek: {
+        tip: 'Automatically resume playback after seeking with arrow keys / slider.',
+    },
+    controls__shortSeekDistance: {
+        tip: 'Distance in seconds for short seek jumps (1-30 seconds).',
+    },
+    controls__longSeekDistance: {
+        tip: 'Distance in seconds for long seek jumps (5-300 seconds).',
+    },
     controls__wheelVolumeControl: {
         tip: 'Enable mouse wheel scrolling to control volume.',
     },
@@ -50,6 +72,8 @@ export const settingsUi: Partial<Record<keyof AppSettings, boolean | {
     // Hide firstRun and volume from settings UI
     app__firstRun: false,
     player__volume: false,
+    player__loop: false,
+    player__autoPlay: false,
     app__enableFileAssociations: {
         tip: 'Enable file associations for .mpv files.',
     },

@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { useSnapshot } from 'valtio';
 import { toast } from 'sonner';
 import { videoState, videoActions } from '../store/videoStore';
@@ -12,15 +12,21 @@ interface VideoDisplayProps {
 const VideoDisplay: React.FC<VideoDisplayProps> = ({ videoRef }) => {
   const snap = useSnapshot(videoState);
   const settings = useSettings();
+  const playPromise = useRef<Promise<void>>(Promise.resolve());
 
   // Initialize video player
   useEffect(() => {
     const video = videoRef.current;
+    globalThis.video = video;
     if (!video) return;
 
     // Set up event listeners
-    const handlePlay = () => videoActions.play();
-    const handlePause = () => videoActions.pause();
+    const handlePlay = () => {
+      videoActions.play();
+    }
+    const handlePause = () => {
+      videoActions.pause();
+    }
     const handleTimeUpdate = () => {
       videoActions.setCurrentTime(video.currentTime);
     };
@@ -63,17 +69,20 @@ const VideoDisplay: React.FC<VideoDisplayProps> = ({ videoRef }) => {
       videoState.isEnded = true;
     }
 
-    if (snap.isPlaying && video.paused && !video.ended) {
-      video.play().catch(error => {
-        videoActions.setError(`Failed to play video: ${error.message}`);
-      });
-    } else if (!snap.isPlaying && !video.paused && !video.ended) {
-      video.pause();
-    }
-
     // Update progress bar on Windows
     electronMethods.updateProgressBar({ isPlaying: snap.isPlaying, progress: snap.progress });
-  }, [snap.isPlaying, snap.progress, videoRef]);
+  }, [snap.progress, videoRef]);
+
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video || video.ended) return;
+
+    if (snap.isPlaying && video.paused) {
+      playVideo();
+    } else if (!snap.isPlaying && !video.paused) {
+      video.pause();
+    }
+  }, [snap.isPlaying, videoRef]);
 
   // Handle volume changes
   useEffect(() => {
@@ -103,6 +112,17 @@ const VideoDisplay: React.FC<VideoDisplayProps> = ({ videoRef }) => {
     }
   }, [snap.progress, snap.duration, videoRef]);
 
+  const playVideo = () => {
+    const video = videoRef.current;
+    if (!video || !video.paused) return;
+
+    playPromise.current = playPromise.current.then(() => {
+      playPromise.current = video.play().catch(error => {
+        videoActions.setError(`Failed to play video: ${error.message}`);
+      });
+    })
+  }
+
   // Handle file loading
   useEffect(() => {
     const video = videoRef.current;
@@ -113,8 +133,12 @@ const VideoDisplay: React.FC<VideoDisplayProps> = ({ videoRef }) => {
       const fileName = snap.currentFile.split(/[/\\]/).pop() || '';
       electronMethods.updateWindowTitle(fileName);
 
-      const fileUrl = snap.currentFile.startsWith('file://') ? snap.currentFile : `file://${snap.currentFile}`;
+      const fileUrl = snap.currentFile.includes('://') ? snap.currentFile : `file://${snap.currentFile}`;
       video.src = fileUrl;
+
+      if (settings.player__autoPlay) {
+        playVideo();
+      }
 
       // Add error handling for video loading
       const handleError = (e: Event) => {
@@ -128,21 +152,12 @@ const VideoDisplay: React.FC<VideoDisplayProps> = ({ videoRef }) => {
         // toast.info('Loading video...');
       };
 
-      const handleCanPlay = () => {
-        // Auto-play the video when it's ready
-        video.play().catch(error => {
-          console.error('Auto-play failed:', error);
-        });
-      };
-
       video.addEventListener('error', handleError);
       video.addEventListener('loadstart', handleLoadStart);
-      video.addEventListener('canplay', handleCanPlay);
 
       return () => {
         video.removeEventListener('error', handleError);
         video.removeEventListener('loadstart', handleLoadStart);
-        video.removeEventListener('canplay', handleCanPlay);
       };
     } catch (error) {
       console.error('Error setting video source:', error);

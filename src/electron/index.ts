@@ -6,31 +6,23 @@ import { setupIpcHandlers } from './ipcHandlers';
 import { settingsMain } from './ipcHandlers/settingsHandlers';
 import { setupWindowsFileAssociations } from './ipcHandlers/fileAssociationHandler';
 import WindowKeeper from 'electron-window-keeper'
-import { updateElectronApp, UpdateSourceType } from 'update-electron-app';
 import electronLog from 'electron-log';
 import { getFFprobePath, isFFprobeAvailable } from './utils/ffprobePath';
+import { thumbnailToolbar } from './ipcHandlers/windowHandlers';
 
 // Configure auto-updates with more specific settings
 // eslint-disable-next-line no-constant-condition
 if (false) {
-  updateElectronApp({
-    updateSource: {
-      type: UpdateSourceType.ElectronPublicUpdateService,
-      repo: 'zardoy/aqua-player'
-    },
-    updateInterval: '4 hours', // Increase interval to reduce conflicts
-    logger: electronLog,
-    notifyUser: false
-  });
+  // updateElectronApp({
+  //   updateSource: {
+  //     type: UpdateSourceType.ElectronPublicUpdateService,
+  //     repo: 'zardoy/aqua-player'
+  //   },
+  //   updateInterval: '4 hours', // Increase interval to reduce conflicts
+  //   logger: electronLog,
+  //   notifyUser: false
+  // });
 }
-
-// Log update configuration
-electronLog.info('Update configuration:', {
-  repo: 'zardoy/aqua-player',
-  platform: process.platform,
-  arch: process.arch,
-  version: process.env.APP_VERSION || 'unknown'
-});
 
 // Log ffprobe path and verify it's accessible
 electronLog.info('FFprobe configuration:', {
@@ -123,9 +115,10 @@ const createWindow = (): void => {
         ...details.responseHeaders,
         'Content-Security-Policy': [
           "default-src 'self' 'unsafe-inline' 'unsafe-eval' data: local-file: file: ws: wss:; " +
-          "media-src 'self' data: local-file: file: blob: https://filesamples.com; " +
+          "media-src 'self' data: local-file: file: blob: https://filesamples.com http: https:; " +
           "script-src 'self' 'unsafe-inline' 'unsafe-eval' ws: wss:; " +
-          "connect-src 'self' ws: wss:;"
+          "connect-src 'self' ws: wss: http: https:; " +
+          "img-src 'self' data: local-file: file: blob: http: https:;"
         ]
       }
     });
@@ -141,46 +134,7 @@ const createWindow = (): void => {
   initializeIpcHandlers();
 
   // Set up Windows thumbnail toolbar
-  if (process.platform === 'win32') {
-    const thumbnailToolbar = {
-      buttons: [
-        {
-          tooltip: 'Previous',
-          icon: nativeImage.createFromPath(path.join(app.getAppPath(), 'assets/thumbnail_control/prev.png')),
-          click: () => mainWindow?.webContents.send('thumbnail-control', 'prev')
-        },
-        {
-          tooltip: 'Play/Pause',
-          icon: nativeImage.createFromPath(path.join(app.getAppPath(), 'assets/thumbnail_control/play.png')),
-          click: () => mainWindow?.webContents.send('thumbnail-control', 'playpause')
-        },
-        {
-          tooltip: 'Next',
-          icon: nativeImage.createFromPath(path.join(app.getAppPath(), 'assets/thumbnail_control/next.png')),
-          click: () => mainWindow?.webContents.send('thumbnail-control', 'next')
-        },
-        // {
-        //   tooltip: 'Toggle Fullscreen',
-        //   icon: nativeImage.createFromPath(path.join(app.getAppPath(), 'assets/thumbnail_control/fullscreen.png')),
-        //   click: () => mainWindow?.webContents.send('thumbnail-control', 'fullscreen')
-        // }
-      ]
-    };
-
-    mainWindow.setThumbarButtons(thumbnailToolbar.buttons);
-
-    // Update play/pause button based on playback state
-    ipcMain.on('update-progress-bar', (_event, { isPlaying }) => {
-      if (!mainWindow || process.platform !== 'win32') return;
-
-      const buttons = [...thumbnailToolbar.buttons];
-      buttons[1].icon = nativeImage.createFromPath(path.join(
-        app.getAppPath(),
-        `assets/thumbnail_control/${isPlaying ? 'pause' : 'play'}.png`
-      ));
-      mainWindow.setThumbarButtons(buttons);
-    });
-  }
+  thumbnailToolbar(mainWindow);
 };
 
 // Set up IPC handlers for communication between renderer and main process
@@ -195,8 +149,6 @@ const initializeIpcHandlers = () => {
 // Some APIs can only be used after this event occurs.
 app.whenReady().then(async () => {
   // Set up file associations based on settings
-  await setupWindowsFileAssociations();
-
   // Handle custom protocol for local files
   protocol.handle('local-file', (req) => {
     let filePath = req.url.replace('local-file://', '');
@@ -214,6 +166,8 @@ app.whenReady().then(async () => {
   });
 
   createWindow();
+
+  await setupWindowsFileAssociations();
 });
 
 // Quit when all windows are closed, except on macOS. There, it's common

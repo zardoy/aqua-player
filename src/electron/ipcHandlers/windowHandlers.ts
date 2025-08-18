@@ -1,4 +1,6 @@
-import { app, BrowserWindow } from 'electron';
+import { app, BrowserWindow, ipcMain, nativeImage } from 'electron';
+import * as fs from 'fs';
+import * as path from 'path';
 
 export function setupWindowHandlers(mainWindow: BrowserWindow) {
   // Set initial progress state
@@ -77,9 +79,59 @@ export function setupWindowHandlers(mainWindow: BrowserWindow) {
       }
 
       // Update thumbnail toolbar play/pause button
-      mainWindow.webContents.send('update-progress-bar', { isPlaying });
+      ipcMain.emit('update-progress-bar', null, { isPlaying });
     }
   };
 
   return handlers;
+}
+
+export const thumbnailToolbar = (window: BrowserWindow) => {
+  const isPlaying = false;
+  const setButtons = () => {
+    let containerPath = ''
+    for (const possiblePath of [path.join(app.getAppPath(), 'assets/thumbnail_control/'), path.join(process.resourcesPath, 'thumbnail_control/')]) {
+      if (fs.existsSync(path.join(possiblePath, 'prev.png'))) {
+        containerPath = possiblePath;
+        break;
+      }
+    }
+
+
+    const thumbnailToolbar = {
+      buttons: [
+        {
+          tooltip: 'Previous',
+          icon: nativeImage.createFromPath(path.join(containerPath, 'prev.png')),
+          click: () => window?.webContents.send('thumbnail-control', 'prev')
+        },
+        {
+          tooltip: 'Play/Pause',
+          icon: nativeImage.createFromPath(path.join(containerPath, isPlaying ? 'pause' : 'play', '.png')),
+          click: () => window?.webContents.send('thumbnail-control', 'playpause')
+        },
+        {
+          tooltip: 'Next',
+          icon: nativeImage.createFromPath(path.join(containerPath, 'next.png')),
+          click: () => window?.webContents.send('thumbnail-control', 'next')
+        },
+        // {
+        //   tooltip: 'Toggle Fullscreen',
+        //   icon: nativeImage.createFromPath(path.join(containerPath, 'fullscreen.png')),
+        //   click: () => window?.webContents.send('thumbnail-control', 'fullscreen')
+        // }
+      ]
+    };
+
+    window.setThumbarButtons(thumbnailToolbar.buttons);
+  }
+  if (process.platform === 'win32') {
+    setButtons()
+
+    // Update play/pause button based on playback state
+    ipcMain.on('update-progress-bar', (_event, { isPlaying }) => {
+      isPlaying = isPlaying;
+      setButtons();
+    });
+  }
 }

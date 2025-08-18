@@ -3,6 +3,10 @@
 const fs = require('fs');
 const path = require('path');
 
+if (fs.existsSync(path.join(__dirname, '..', 'dist', 'ffprobe'))) {
+  process.exit(0);
+}
+
 const platform = process.platform;
 const arch = process.arch;
 

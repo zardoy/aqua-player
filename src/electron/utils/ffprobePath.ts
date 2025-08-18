@@ -3,18 +3,6 @@ import * as path from 'path';
 import * as fs from 'fs';
 
 export function getFFprobePath(): string {
-  // In development, use ffprobe-static
-  if (process.env.NODE_ENV === 'development') {
-    try {
-      const ffprobe = require('ffprobe-static');
-      return ffprobe.path;
-    } catch {
-      // Fallback to system ffprobe
-      return process.platform === 'win32' ? 'ffprobe.exe' : 'ffprobe';
-    }
-  }
-
-  // In production, use the bundled binary
   const platform = process.platform;
   const arch = process.arch;
 

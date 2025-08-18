@@ -2,6 +2,7 @@ import { videoActions, videoState } from './store/videoStore';
 import type { AllKeyCodes } from './client/appKeymap';
 import { electronMethods } from './ipcRenderer';
 import { toast } from 'sonner';
+import { settingsState } from './store/settingsStore';
 
 export interface Command {
   name?: string;
@@ -23,6 +24,7 @@ const makeCommands = <T extends string>(commands: Record<T, Command>): Record<T,
 // Utility type for when you need the array item with id
 export type CommandArrayItem = Command & { id: string };
 
+// Do not add new commands until explicitly asked for, for example help or change settings commands
 export const commands = makeCommands({
   video_togglePlay: {
     name: 'Toggle Play/Pause',
@@ -44,6 +46,34 @@ export const commands = makeCommands({
     action: () => videoActions.seekBackward(10),
     category: 'Video',
     keybind: { code: 'ArrowLeft' }
+  },
+  video_seekShortForward: {
+    name: 'Seek Short Forward',
+    description: 'Seek forward by short distance (1 second by default)',
+    action: videoActions.seekShortForward,
+    category: 'Video',
+    keybind: { code: 'ArrowRight', shiftKey: true }
+  },
+  video_seekShortBackward: {
+    name: 'Seek Short Backward',
+    description: 'Seek backward by short distance (1 second by default)',
+    action: videoActions.seekShortBackward,
+    category: 'Video',
+    keybind: { code: 'ArrowLeft', shiftKey: true }
+  },
+  video_seekLongForward: {
+    name: 'Seek Long Forward',
+    description: 'Seek forward by long distance (10 seconds by default)',
+    action: videoActions.seekLongForward,
+    category: 'Video',
+    keybind: { code: 'ArrowRight', ctrlKey: true }
+  },
+  video_seekLongBackward: {
+    name: 'Seek Long Backward',
+    description: 'Seek backward by long distance (10 seconds by default)',
+    action: videoActions.seekLongBackward,
+    category: 'Video',
+    keybind: { code: 'ArrowLeft', ctrlKey: true }
   },
   audio_volumeUp: {
     name: 'Increase Volume',
@@ -212,14 +242,6 @@ export const commands = makeCommands({
     description: 'Enable or disable video zooming',
     action: videoActions.toggleZoom,
     category: 'Video',
-    keybind: { code: 'KeyZ', ctrlKey: true }
-  },
-  video_toggleZoomAlt: {
-    name: 'Toggle Zoom (Alt)',
-    description: 'Enable or disable video zooming (alternative shortcut)',
-    action: videoActions.toggleZoom,
-    category: 'Video',
-    keybind: { code: 'KeyZ', altKey: true }
   },
   stream_pasteUrl: {
     name: 'Paste Stream URL / File Path',
@@ -247,7 +269,7 @@ export const commands = makeCommands({
     keybind: { code: 'KeyV', ctrlKey: true }
   },
   stream_copyUrl: {
-    name: 'Copy Stream URL',
+    name: 'Copy Stream URL / File Path',
     description: 'Copy current video source URL to clipboard',
     action: async () => {
       try {
@@ -273,7 +295,7 @@ export const commands = makeCommands({
     keybind: { code: 'KeyC', ctrlKey: true, shiftKey: true }
   },
   stream_showCurrentUrl: {
-    name: 'Show Current URL',
+    name: 'Show Current URL / File Path',
     description: 'Display current video source URL',
     action: () => {
       const src = videoState.currentFile;
@@ -288,7 +310,6 @@ export const commands = makeCommands({
       }
     },
     category: 'Streaming',
-    keybind: { code: 'KeyU', ctrlKey: true }
   },
   stream_openInBrowser: {
     name: 'Open URL in Browser',
@@ -310,72 +331,41 @@ export const commands = makeCommands({
     keybind: { code: 'KeyO', ctrlKey: true, altKey: true }
   },
   stream_reload: {
-    name: 'Reload Stream',
-    description: 'Reload current video stream',
+    name: 'Reload Frontend (Ctrl+R)',
+    description: 'Reload current video frontend',
     action: () => {
-      const src = videoState.currentFile;
-      if (src && (src.startsWith('http://') || src.startsWith('https://'))) {
-        // Reload by setting the same URL again
-        const currentSrc = src;
-        videoState.currentFile = '';
-        setTimeout(() => {
-          videoState.currentFile = currentSrc;
-        }, 100);
-        toast.success('Reloading stream...');
-      } else {
-        toast.error('Not a valid stream URL');
-      }
+      const videoTime = videoState.currentTime;
+      const url = new URL(location.href);
+      url.searchParams.set('time', videoTime.toString());
+      url.searchParams.set('file', videoState.currentFile || '');
+      window.location.href = url.toString();
     },
-    category: 'Streaming',
-    keybind: { code: 'KeyR', ctrlKey: true, altKey: true }
-  },
-  stream_showInfo: {
-    name: 'Show Stream Info',
-    description: 'Display information about current stream',
-    action: () => {
-      const src = videoState.currentFile;
-      if (src && (src.startsWith('http://') || src.startsWith('https://'))) {
-        const info = [
-          `Type: Stream`,
-          `URL: ${src}`,
-          `Duration: ${videoState.duration > 0 ? `${Math.floor(videoState.duration / 60)}:${Math.floor(videoState.duration % 60).toString().padStart(2, '0')}` : 'Unknown'}`,
-          `Resolution: ${videoState.videoResolutionDisplay || 'Unknown'}`,
-          `Codec: ${videoState.videoCodec || 'Unknown'}`,
-          `FPS: ${videoState.fps || 'Unknown'}`,
-          `Bitrate: ${videoState.videoBitrate ? `${Math.round(videoState.videoBitrate / 1000)} kbps` : 'Unknown'}`
-        ].join('\n');
-        toast.info(`Stream Information:\n${info}`);
-      } else {
-        toast.error('Not a valid stream URL');
-      }
-    },
-    category: 'Streaming',
-    keybind: { code: 'KeyI', ctrlKey: true, altKey: true }
+    category: 'Debug',
   },
   file_showInfo: {
-    name: 'Show File Info',
+    name: 'Show File / Stream Info',
     description: 'Display information about current file',
     action: () => {
       const src = videoState.currentFile;
-      if (src && !(src.startsWith('http://') || src.startsWith('https://'))) {
-        const fileName = src.split(/[/\\]/).pop() || src;
-        const info = [
-          `Type: Local File`,
-          `Name: ${fileName}`,
-          `Path: ${src}`,
-          `Duration: ${videoState.duration > 0 ? `${Math.floor(videoState.duration / 60)}:${Math.floor(videoState.duration % 60).toString().padStart(2, '0')}` : 'Unknown'}`,
-          `Resolution: ${videoState.videoResolutionDisplay || 'Unknown'}`,
-          `Codec: ${videoState.videoCodec || 'Unknown'}`,
-          `FPS: ${videoState.fps || 'Unknown'}`,
-          `Bitrate: ${videoState.videoBitrate ? `${Math.round(videoState.videoBitrate / 1000)} kbps` : 'Unknown'}`
-        ].join('\n');
-        toast.info(`File Information:\n${info}`);
-      } else {
-        toast.error('Not a valid local file');
+      if (!src) {
+        toast.error('No file loaded');
+        return
       }
+      const fileName = src.split(/[/\\]/).pop() || src;
+      const info = [
+        `Type: Local File`,
+        `Name: ${fileName}`,
+        `Path: ${src}`,
+        `Duration: ${videoState.duration > 0 ? `${Math.floor(videoState.duration / 60)}:${Math.floor(videoState.duration % 60).toString().padStart(2, '0')}` : 'Unknown'}`,
+        `Resolution: ${videoState.videoResolutionDisplay || 'Unknown'}`,
+        `Codec: ${videoState.videoCodec || 'Unknown'}`,
+        `FPS: ${videoState.fps || 'Unknown'}`,
+        `Bitrate: ${videoState.videoBitrate ? `${Math.round(videoState.videoBitrate / 1000)} kbps` : 'Unknown'}`
+      ].join('\n');
+      toast.info(`File Information:\n${info}`);
     },
     category: 'File',
-    keybind: { code: 'KeyI', ctrlKey: true, shiftKey: true }
+    keybind: { code: 'KeyI', ctrlKey: true }
   },
   help_showVersion: {
     name: 'Show Version Info',

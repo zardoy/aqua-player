@@ -117,13 +117,17 @@ export const videoActions = {
   setProgress: (progress: number) => {
     videoState.progress = progress;
   },
-  setCurrentTime: (time: number) => {
+  setCurrentTime: (time: number, canContinuePlaying = true) => {
     videoState.currentTime = time;
     videoState.progress = videoState.duration > 0 ? time / videoState.duration : 0;
 
     // Save position every 5 seconds
     if (videoState.currentFile && time > 0 && time % 5 < 1) {
       videoActions.savePosition(videoState.currentFile, time);
+    }
+
+    if (canContinuePlaying && settingsState.controls__autoPlayOnSeek && !videoState.isPlaying) {
+      videoActions.play();
     }
   },
   seekForward: (seconds = 10) => {
@@ -135,14 +139,56 @@ export const videoActions = {
     videoActions.setCurrentTime(newTime);
   },
   nextFrame: () => {
-    const frameDuration = videoState.fps > 0 ? 1 / videoState.fps : 1/30;
+    // More robust frame calculation with fallback
+    let frameDuration: number;
+
+    if (videoState.fps > 0) {
+      frameDuration = 1 / videoState.fps;
+    } else if (videoState.duration > 0) {
+      // Fallback: estimate 30fps for videos, 1 second for audio
+      frameDuration = videoState.fileType && VIDEO_EXTENSIONS.includes(videoState.fileType.toLowerCase()) ? 1/30 : 1;
+    } else {
+      // Default fallback
+      frameDuration = 1/30;
+    }
+
     const newTime = Math.min(videoState.currentTime + frameDuration, videoState.duration);
-    videoActions.setCurrentTime(newTime);
+    videoActions.setCurrentTime(newTime, false);
   },
   previousFrame: () => {
-    const frameDuration = videoState.fps > 0 ? 1 / videoState.fps : 1/30;
+    // More robust frame calculation with fallback
+    let frameDuration: number;
+
+    if (videoState.fps > 0) {
+      frameDuration = 1 / videoState.fps;
+    } else if (videoState.duration > 0) {
+      // Fallback: estimate 30fps for videos, 1 second for audio
+      frameDuration = videoState.fileType && VIDEO_EXTENSIONS.includes(videoState.fileType.toLowerCase()) ? 1/30 : 1;
+    } else {
+      // Default fallback
+      frameDuration = 1/30;
+    }
+
     const newTime = Math.max(videoState.currentTime - frameDuration, 0);
-    videoActions.setCurrentTime(newTime);
+    videoActions.setCurrentTime(newTime, false);
+  },
+
+  // Short and long seek jumps
+  seekShortForward: () => {
+    const distance = Math.max(1, Math.min(30, settingsState.controls__shortSeekDistance));
+    videoActions.seekForward(distance);
+  },
+  seekShortBackward: () => {
+    const distance = Math.max(1, Math.min(30, settingsState.controls__shortSeekDistance));
+    videoActions.seekBackward(distance);
+  },
+  seekLongForward: () => {
+    const distance = Math.max(5, Math.min(300, settingsState.controls__longSeekDistance));
+    videoActions.seekForward(distance);
+  },
+  seekLongBackward: () => {
+    const distance = Math.max(5, Math.min(300, settingsState.controls__longSeekDistance));
+    videoActions.seekBackward(distance);
   },
 
   // Volume controls
@@ -331,7 +377,6 @@ export const videoActions = {
         const folder = lastSeparatorIndex >= 0 ? filePath.slice(0, lastSeparatorIndex) : '';
         videoState.currentFolder = folder;
         const files = await electronMethods.getFolderContents(folder);
-        console.log('files', files)
 
         // Determine if current file is video or audio
         const currentExt = filePath.toLowerCase().split('.').pop() || '';

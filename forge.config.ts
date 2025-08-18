@@ -48,51 +48,7 @@ const config: ForgeConfig = {
     },
     // File associations for Windows
     win32metadata: {
-      FileAssociations: [
-        {
-          ext: 'mp4',
-          name: 'MP4 Video File',
-          description: 'MP4 Video File',
-          mimeType: 'video/mp4',
-          role: 'Viewer'
-        },
-        {
-          ext: 'mkv',
-          name: 'Matroska Video File',
-          description: 'Matroska Video File',
-          mimeType: 'video/x-matroska',
-          role: 'Viewer'
-        },
-        {
-          ext: 'avi',
-          name: 'AVI Video File',
-          description: 'AVI Video File',
-          mimeType: 'video/x-msvideo',
-          role: 'Viewer'
-        },
-        {
-          ext: 'mov',
-          name: 'QuickTime Video File',
-          description: 'QuickTime Video File',
-          mimeType: 'video/quicktime',
-          role: 'Viewer'
-        },
-        {
-          ext: 'webm',
-          name: 'WebM Video File',
-          description: 'WebM Video File',
-          mimeType: 'video/webm',
-          role: 'Viewer'
-        },
-        {
-          ext: 'mp3',
-          name: 'MP3 Audio File',
-          description: 'MP3 Audio File',
-          mimeType: 'audio/mpeg',
-          role: 'Viewer'
-        }
-      ]
-    } as any
+    }
   },
   rebuildConfig: {},
   makers: [
