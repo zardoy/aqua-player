@@ -1,6 +1,8 @@
 import { electronMethods } from '../renderer/ipcRenderer';
 import { AUDIO_EXTENSIONS, VIDEO_EXTENSIONS } from '../shared/constants';
 import { proxy } from 'valtio';
+import { settingsState } from './settingsStore';
+import { toast } from 'sonner';
 
 type VideoTrack = {
   id: string;
@@ -46,9 +48,6 @@ export const videoState = proxy({
   // Video zoom state
   zoomLevel: 1,
   zoomEnabled: true,
-
-  // Position memory
-  filePositions: {} as Record<string, number>,
 
   // Tracks
   videoTracks: [] as VideoTrack[],
@@ -121,7 +120,7 @@ export const videoActions = {
   setCurrentTime: (time: number) => {
     videoState.currentTime = time;
     videoState.progress = videoState.duration > 0 ? time / videoState.duration : 0;
-    
+
     // Save position every 5 seconds
     if (videoState.currentFile && time > 0 && time % 5 < 1) {
       videoActions.savePosition(videoState.currentFile, time);
@@ -189,15 +188,10 @@ export const videoActions = {
     const clampedLevel = Math.max(0.1, Math.min(5, level));
     const oldLevel = videoState.zoomLevel;
     videoState.zoomLevel = clampedLevel;
-    
+
     // Show toast notification for significant zoom changes
     if (Math.abs(clampedLevel - oldLevel) >= 0.2) {
-      try {
-        const { toast } = require('sonner');
-        toast.info(`Zoom: ${Math.round(clampedLevel * 100)}%`);
-      } catch (error) {
-        // Toast not available in this context
-      }
+      toast.info(`Zoom: ${Math.round(clampedLevel * 100)}%`);
     }
   },
   increaseZoom: (amount = 0.1) => {
@@ -212,54 +206,21 @@ export const videoActions = {
   },
   resetZoom: () => {
     videoActions.setZoomLevel(1);
-    // Show toast notification
-    try {
-      const { toast } = require('sonner');
-      toast.info('Zoom reset to 100%');
-    } catch (error) {
-      // Toast not available in this context
-    }
   },
   toggleZoom: () => {
     videoState.zoomEnabled = !videoState.zoomEnabled;
     if (!videoState.zoomEnabled) {
       videoActions.resetZoom();
     }
-    // Show toast notification
-    try {
-      const { toast } = require('sonner');
-      toast.info(`Zoom ${videoState.zoomEnabled ? 'enabled' : 'disabled'}`);
-    } catch (error) {
-      // Toast not available in this context
-    }
   },
 
   // Position memory
   savePosition: (filePath: string, time: number) => {
     if (filePath) {
-      // Check if position saving is enabled
-      try {
-        const { settingsState } = require('./store/settingsStore');
-        if (!settingsState.player__savePosition) {
-          return; // Don't save if disabled
-        }
-      } catch (error) {
-        // Settings not available, continue with saving
+      if (!settingsState.player__savePosition) {
+        return; // Don't save if disabled
       }
-      
-      const oldPosition = videoState.filePositions[filePath] || 0;
-      videoState.filePositions[filePath] = time;
-      
-      // Show toast notification for significant position saves (every 30 seconds)
-      if (Math.abs(time - oldPosition) >= 30) {
-        try {
-          const { toast } = require('sonner');
-          toast.info(`Position saved at ${Math.floor(time / 60)}:${Math.floor(time % 60).toString().padStart(2, '0')}`);
-        } catch (error) {
-          // Toast not available in this context
-        }
-      }
-      
+
       // Save to localStorage
       try {
         const stored = localStorage.getItem('aqua-player-positions');
@@ -273,63 +234,25 @@ export const videoActions = {
   },
   loadPosition: (filePath: string): number => {
     if (!filePath) return 0;
-    
-    // Check if position saving is enabled
-    try {
-      const { settingsState } = require('./store/settingsStore');
-      if (!settingsState.player__savePosition) {
-        return 0; // Don't load if disabled
-      }
-    } catch (error) {
-      // Settings not available, continue with loading
+
+    if (!settingsState.player__savePosition) {
+      return 0; // Don't load if disabled
     }
-    
-    // Try to get from memory first
-    if (videoState.filePositions[filePath]) {
-      const position = videoState.filePositions[filePath];
-      // Show toast notification for restored position
-      try {
-        const { toast } = require('sonner');
-        toast.info(`Restored to ${Math.floor(position / 60)}:${Math.floor(position % 60).toString().padStart(2, '0')}`);
-      } catch (error) {
-        // Toast not available in this context
-      }
-      return position;
-    }
-    
+
     // Try to get from localStorage
     try {
       const stored = localStorage.getItem('aqua-player-positions');
       if (stored) {
         const positions = JSON.parse(stored);
         if (positions[filePath]) {
-          videoState.filePositions[filePath] = positions[filePath];
-          const position = positions[filePath];
-          // Show toast notification for restored position
-          try {
-            const { toast } = require('sonner');
-            toast.info(`Restored to ${Math.floor(position / 60)}:${Math.floor(position % 60).toString().padStart(2, '0')}`);
-          } catch (error) {
-            // Toast not available in this context
-          }
-          return position;
+          return positions[filePath];
         }
       }
     } catch (error) {
       console.error('Failed to load position:', error);
     }
-    
+
     return 0;
-  },
-  loadPositionsFromStorage: () => {
-    try {
-      const stored = localStorage.getItem('aqua-player-positions');
-      if (stored) {
-        videoState.filePositions = JSON.parse(stored);
-      }
-    } catch (error) {
-      console.error('Failed to load positions from storage:', error);
-    }
   },
 
   // HTTP streaming support
@@ -339,22 +262,16 @@ export const videoActions = {
       videoState.fileType = 'stream';
       videoState.hasError = false;
       videoState.errorMessage = '';
-      
+
       // Add to file history
       videoActions.addToHistory(url);
       videoState.openedFiles.add(url);
-      
+
       // Update query string
       videoActions.updateQueryString(url);
-      
-      // Show toast notification
-      try {
-        const { toast } = require('sonner');
-        toast.success(`Loading stream: ${url}`);
-      } catch (error) {
-        // Toast not available in this context
-      }
-      
+
+      toast.success(`Loading stream: ${url}`);
+
       return url;
     }
     return null;
@@ -461,7 +378,7 @@ export const videoActions = {
           [filePath]: { watchedAt: new Date().toISOString() }
         }
       });
-    } catch {}
+    } catch { /* empty */ }
   },
 
   loadNextFile: () => {
@@ -623,8 +540,8 @@ export const videoActions = {
     videoState.fileHistory = videoState.fileHistory.filter(f => f !== filePath);
     // Add to beginning
     videoState.fileHistory.unshift(filePath);
-    // Keep only last 50 files
-    videoState.fileHistory = videoState.fileHistory.slice(0, 50);
+    const HISTORY_LIMIT = 1000
+    videoState.fileHistory = videoState.fileHistory.slice(0, HISTORY_LIMIT);
     // Save to localStorage
     localStorage.setItem('aqua-player-file-history', JSON.stringify(videoState.fileHistory));
   },

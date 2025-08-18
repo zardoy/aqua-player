@@ -27,38 +27,6 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({ onClose }) => {
 
   return (
     <Modal title="Settings" onClose={onClose}>
-      {/* Status Section */}
-      <div className="settings-section">
-        <h4>Current Status</h4>
-        <div className="settings-row">
-          <span>Zoom Level:</span>
-          <span className="status-value">
-            {Math.round(videoSnap.zoomLevel * 100)}%
-            {videoSnap.zoomLevel !== 1 && (
-              <button 
-                onClick={() => videoSnap.zoomLevel !== 1 && require('../store/videoStore').videoActions.resetZoom()}
-                className="reset-zoom-btn"
-                style={{ marginLeft: '8px', padding: '2px 6px', fontSize: '11px' }}
-              >
-                Reset
-              </button>
-            )}
-          </span>
-        </div>
-        <div className="settings-row">
-          <span>Position Saving:</span>
-          <span className="status-value">
-            {snap.player__savePosition ? 'Enabled' : 'Disabled'}
-          </span>
-        </div>
-        <div className="settings-row">
-          <span>Zoom Enabled:</span>
-          <span className="status-value">
-            {snap.controls__zoomEnabled ? 'Yes' : 'No'}
-          </span>
-        </div>
-      </div>
-
       {/* Settings Categories */}
       {categories.map(category => (
             <div key={category.name} className="settings-section">

@@ -200,33 +200,12 @@ export const commands = makeCommands({
     category: 'Window',
     keybind: { code: 'KeyB' }
   },
-  video_zoomIn: {
-    name: 'Zoom In',
-    description: 'Increase video zoom level',
-    action: () => videoActions.increaseZoom(0.1),
-    category: 'Video',
-    keybind: { code: 'Equal', ctrlKey: true }
-  },
-  video_zoomOut: {
-    name: 'Zoom Out',
-    description: 'Decrease video zoom level',
-    action: () => videoActions.decreaseZoom(0.1),
-    category: 'Video',
-    keybind: { code: 'Minus', ctrlKey: true }
-  },
   video_resetZoom: {
     name: 'Reset Zoom',
     description: 'Reset video zoom to 100%',
     action: videoActions.resetZoom,
     category: 'Video',
     keybind: { code: 'Digit0', ctrlKey: true }
-  },
-  video_resetZoomAlt: {
-    name: 'Reset Zoom (Alt)',
-    description: 'Reset video zoom to 100% (alternative shortcut)',
-    action: videoActions.resetZoom,
-    category: 'Video',
-    keybind: { code: 'Digit0', altKey: true }
   },
   video_toggleZoom: {
     name: 'Toggle Zoom',
@@ -243,26 +222,25 @@ export const commands = makeCommands({
     keybind: { code: 'KeyZ', altKey: true }
   },
   stream_pasteUrl: {
-    name: 'Paste Stream URL',
-    description: 'Paste HTTP/HTTPS URL from clipboard to load stream',
+    name: 'Paste Stream URL / File Path',
+    description: 'Paste HTTP/HTTPS URL or file path from clipboard to load stream',
     action: async () => {
       try {
-        const text = await navigator.clipboard.readText();
-        if (text && (text.startsWith('http://') || text.startsWith('https://'))) {
+        let text = await navigator.clipboard.readText();
+        text = text.trim()
+        if (text.startsWith('"') && text.endsWith('"')) {
+          text = text.slice(1, -1);
+        }
+        if (text && (text.startsWith('http://') || text.startsWith('https://') || text.startsWith('file://'))) {
           videoActions.loadStreamUrl(text);
+        } else if (text.match(/^[a-zA-Z]:\\/) || text.match(/^\//)) {
+          videoActions.loadFilePath(text);
         } else {
-          // Show error toast for invalid URL
-          toast.error('Invalid URL format. Please copy a valid HTTP/HTTPS URL.');
+          toast.error('Invalid URL format. Please copy a valid HTTP/HTTPS URL or file path.');
         }
       } catch (error) {
         console.error('Failed to read clipboard:', error);
-        // Show error toast
-        try {
-
-          toast.error('Failed to read clipboard');
-        } catch (toastError) {
-          // Toast not available
-        }
+        toast.error('Failed to read clipboard');
       }
     },
     category: 'Streaming',
