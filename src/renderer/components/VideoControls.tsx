@@ -6,7 +6,7 @@ import { MdSubtitles } from 'react-icons/md';
 import { videoState, videoActions } from '../store/videoStore';
 import { useSettings } from '../store/settingsStore';
 import VolumeSlider from './VolumeSlider';
-import { electronMethods } from '../renderer/ipcRenderer';
+import { electronMethods } from '../ipcRenderer';
 
 interface VideoControlsProps {
   showControls: boolean;
@@ -59,7 +59,7 @@ const VideoControlsVisible: React.FC<VideoControlsProps> = ({
   // Toolbar configuration
   const toolbarConfig: ToolbarConfig = {
     left: ['playPause', 'volumeBar', 'timeDisplay', 'title', 'resolution', 'loop', 'playlist', 'history'],
-    right: ['networkIndicator', 'subtitles', 'openFile', 'settings', 'fullscreen']
+    right: ['subtitles', 'openFile', 'settings', 'fullscreen']
   };
 
 

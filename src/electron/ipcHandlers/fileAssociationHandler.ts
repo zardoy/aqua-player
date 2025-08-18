@@ -1,15 +1,11 @@
-import { app } from 'electron';
+import { app, ipcMain } from 'electron';
 import { Registry } from 'rage-edit';
-import { VIDEO_EXTENSIONS, APP_NAME, APP_ID } from '../shared/constants';
+import { VIDEO_EXTENSIONS, APP_NAME, APP_ID } from '../../shared/constants';
+import { settingsMain } from './settingsHandlers';
 
-interface Settings {
-    enableFileAssociations: boolean;
-    [key: string]: any;
-}
-
-export async function setupWindowsFileAssociations(settings: Settings) {
+export async function setupWindowsFileAssociations() {
     if (process.platform !== 'win32') return;
-    if (!settings.enableFileAssociations) {
+    if (!settingsMain.app__enableFileAssociations) {
         await removeWindowsFileAssociations();
         return;
     }
@@ -106,3 +102,9 @@ export async function removeWindowsFileAssociations() {
         return false;
     }
 }
+
+// Listen for settings changes
+ipcMain.on('settings-updated', async (_event, settings) => {
+    // Update file associations when settings change
+    await setupWindowsFileAssociations();
+});

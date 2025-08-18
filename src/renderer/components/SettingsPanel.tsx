@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { FaTimes } from 'react-icons/fa';
 import { useSnapshot } from 'valtio';
 import { settingsState, settingsActions, getSettingsCategories } from '../store/settingsStore';
+import { videoState } from '../store/videoStore';
 import Modal from './base/Modal';
 
 interface SettingsPanelProps {
@@ -11,6 +12,7 @@ interface SettingsPanelProps {
 
 const SettingsPanel: React.FC<SettingsPanelProps> = ({ onClose }) => {
   const snap = useSnapshot(settingsState);
+  const videoSnap = useSnapshot(videoState);
   const categories = getSettingsCategories();
 
   const handleSettingChange = (key: string, value: any) => {
@@ -25,7 +27,8 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({ onClose }) => {
 
   return (
     <Modal title="Settings" onClose={onClose}>
-          {categories.map(category => (
+      {/* Settings Categories */}
+      {categories.map(category => (
             <div key={category.name} className="settings-section">
               <h4>{category.name}</h4>
               {category.settings.map(setting => (

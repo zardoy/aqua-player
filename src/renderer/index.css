@@ -191,6 +191,22 @@ body {
   margin-left: 10px;
 }
 
+.zoom-badge {
+  background-color: rgba(0, 170, 255, 0.2);
+  color: var(--accent-color);
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 500;
+  margin-left: 10px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.zoom-badge:hover {
+  background-color: rgba(0, 170, 255, 0.3);
+}
+
 .download-speed {
   display: flex;
   align-items: center;
@@ -418,6 +434,28 @@ body {
   color: #ff9800;
   margin-left: 10px;
   flex-grow: 0;
+}
+
+.settings-row .status-value {
+  font-size: 13px;
+  color: var(--accent-color);
+  font-weight: 500;
+  margin-left: 10px;
+  flex-grow: 0;
+}
+
+.settings-row .reset-zoom-btn {
+  background: rgba(0, 170, 255, 0.2);
+  color: var(--accent-color);
+  border: 1px solid rgba(0, 170, 255, 0.3);
+  border-radius: 3px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.settings-row .reset-zoom-btn:hover {
+  background: rgba(0, 170, 255, 0.3);
+  border-color: rgba(0, 170, 255, 0.5);
 }
 
 .settings-footer {

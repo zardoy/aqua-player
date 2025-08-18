@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { toast } from 'sonner';
 import { videoActions } from '../store/videoStore';
-import { electronMethods } from '../renderer/ipcRenderer';
+import { electronMethods } from '../ipcRenderer';
 
 interface GlobalListenersProps {
   containerRef: React.RefObject<HTMLDivElement>;

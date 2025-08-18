@@ -2,8 +2,8 @@ import React, { useEffect } from 'react';
 import { useSnapshot } from 'valtio';
 import { toast } from 'sonner';
 import { videoState, videoActions } from '../store/videoStore';
-import { settingsActions } from '../store/settingsStore';
-import { electronMethods } from '../renderer/ipcRenderer';
+import { settingsActions, useSettings } from '../store/settingsStore';
+import { electronMethods } from '../ipcRenderer';
 
 interface VideoDisplayProps {
   videoRef: React.RefObject<HTMLVideoElement>;
@@ -11,6 +11,7 @@ interface VideoDisplayProps {
 
 const VideoDisplay: React.FC<VideoDisplayProps> = ({ videoRef }) => {
   const snap = useSnapshot(videoState);
+  const settings = useSettings();
 
   // Initialize video player
   useEffect(() => {
@@ -150,6 +151,109 @@ const VideoDisplay: React.FC<VideoDisplayProps> = ({ videoRef }) => {
       toast.error(errorMessage);
     }
   }, [snap.currentFile, videoRef]);
+
+  // Handle Ctrl+wheel zoom and panning
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video) return;
+
+    let isPanning = false;
+    let startX = 0;
+    let startY = 0;
+    let panX = 0;
+    let panY = 0;
+
+    const handleWheel = (e: WheelEvent) => {
+      if (e.ctrlKey && settings.controls__zoomEnabled) {
+        e.preventDefault();
+        const delta = e.deltaY > 0 ? -settings.controls__zoomSensitivity : settings.controls__zoomSensitivity;
+
+        // Calculate cursor position relative to video
+        const rect = video.getBoundingClientRect();
+        const cursorX = (e.clientX - rect.left) / rect.width;
+        const cursorY = (e.clientY - rect.top) / rect.height;
+
+        // Calculate new zoom level
+        const oldZoom = snap.zoomLevel;
+        const newZoom = Math.max(1, Math.min(5, oldZoom + delta));
+
+        // Calculate pan adjustment to keep cursor position fixed
+        if (newZoom !== oldZoom) {
+          const scale = newZoom / oldZoom;
+          const centerX = 0.5;
+          const centerY = 0.5;
+          panX += (centerX - cursorX) * (scale - 1) * rect.width;
+          panY += (centerY - cursorY) * (scale - 1) * rect.height;
+
+          videoActions.setZoomLevel(newZoom);
+          video.style.transform = `scale(${newZoom}) translate(${panX}px, ${panY}px)`;
+        }
+      }
+    };
+
+    const handleMouseDown = (e: MouseEvent) => {
+      if (e.ctrlKey && snap.zoomLevel > 1) {
+        e.preventDefault();
+        isPanning = true;
+        startX = e.clientX - panX;
+        startY = e.clientY - panY;
+        video.style.cursor = 'grabbing';
+      }
+    };
+
+    const handleMouseMove = (e: MouseEvent) => {
+      if (isPanning) {
+        e.preventDefault();
+        panX = e.clientX - startX;
+        panY = e.clientY - startY;
+        video.style.transform = `scale(${snap.zoomLevel}) translate(${panX}px, ${panY}px)`;
+      }
+    };
+
+    const handleMouseUp = () => {
+      if (isPanning) {
+        isPanning = false;
+        video.style.cursor = '';
+      }
+    };
+
+    // Add cursor style for potential panning
+    const handleMouseEnter = (e: MouseEvent) => {
+      if (e.ctrlKey && snap.zoomLevel > 1) {
+        video.style.cursor = 'grab';
+      }
+    };
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.ctrlKey && snap.zoomLevel > 1) {
+        video.style.cursor = 'grab';
+      }
+    };
+
+    const handleKeyUp = (e: KeyboardEvent) => {
+      if (!e.ctrlKey) {
+        video.style.cursor = '';
+      }
+    };
+
+    video.addEventListener('wheel', handleWheel, { passive: false });
+    video.addEventListener('mousedown', handleMouseDown);
+    window.addEventListener('mousemove', handleMouseMove);
+    window.addEventListener('mouseup', handleMouseUp);
+    video.addEventListener('mouseenter', handleMouseEnter);
+    window.addEventListener('keydown', handleKeyDown);
+    window.addEventListener('keyup', handleKeyUp);
+
+    return () => {
+      video.removeEventListener('wheel', handleWheel);
+      video.removeEventListener('mousedown', handleMouseDown);
+      window.removeEventListener('mousemove', handleMouseMove);
+      window.removeEventListener('mouseup', handleMouseUp);
+      video.removeEventListener('mouseenter', handleMouseEnter);
+      window.removeEventListener('keydown', handleKeyDown);
+      window.removeEventListener('keyup', handleKeyUp);
+    };
+  }, [snap.zoomLevel, settings.controls__zoomEnabled, settings.controls__zoomSensitivity, videoRef]);
 
   return (
     <video

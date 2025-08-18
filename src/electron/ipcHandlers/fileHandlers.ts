@@ -1,7 +1,7 @@
 import { BrowserWindow, dialog, shell, ipcMain } from 'electron';
 import * as fs from 'fs';
 import * as path from 'path';
-import { AUDIO_EXTENSIONS, VIDEO_EXTENSIONS } from '../shared/constants';
+import { AUDIO_EXTENSIONS, VIDEO_EXTENSIONS } from '../../shared/constants';
 import { getFFprobePath } from '../utils/ffprobePath';
 
 export function setupFileHandlers(mainWindow: BrowserWindow) {

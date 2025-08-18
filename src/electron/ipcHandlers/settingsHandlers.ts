@@ -1,7 +1,14 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import { app } from 'electron';
-import { deafultSettings } from '../settingsDefinitions';
+import { AppSettings, deafultSettings } from '../../shared/settingsDefinitions';
+
+export const settingsMain = {} as AppSettings
+try {
+  Object.assign(settingsMain, loadSettingsFromDiskSync());
+} catch (error) {
+  console.error('Failed to load settings:', error);
+}
 
 export function setupSettingsHandlers() {
   const settingsPath = path.join(app.getPath('userData'), 'settings.json');
@@ -35,7 +42,7 @@ export function setupSettingsHandlers() {
   return handlers;
 }
 
-export async function loadSettingsFromDisk() {
+export function loadSettingsFromDiskSync(): AppSettings {
   const settingsPath = path.join(app.getPath('userData'), 'settings.json');
 
   try {
