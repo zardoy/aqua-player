@@ -1,7 +1,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import { app } from 'electron';
-import { deafultSettings } from '../settingsDefinitions';
+import { deafultSettings } from '../../shared/settingsDefinitions';
 
 export function setupSettingsHandlers() {
   const settingsPath = path.join(app.getPath('userData'), 'settings.json');

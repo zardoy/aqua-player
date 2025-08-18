@@ -1,7 +1,7 @@
 import { app } from 'electron';
 import { Registry } from 'rage-edit';
-import { VIDEO_EXTENSIONS, APP_NAME, APP_ID } from '../shared/constants';
-import { AppSettings } from '../settingsDefinitions';
+import { VIDEO_EXTENSIONS, APP_NAME, APP_ID } from '../../shared/constants';
+import { AppSettings } from '../../shared/settingsDefinitions';
 
 export async function setupWindowsFileAssociations(settings: AppSettings) {
     if (process.platform !== 'win32') return;

@@ -1,7 +1,7 @@
 import { proxy, useSnapshot } from 'valtio';
 import { noCase } from 'change-case';
-import { deafultSettings, AppSettings, settingsUi } from '../settingsDefinitions';
-import { electronMethods } from '../renderer/ipcRenderer';
+import { deafultSettings, AppSettings, settingsUi } from '../../shared/settingsDefinitions';
+import { electronMethods } from '../ipcRenderer';
 
 // Create a type for settings categories
 type SettingsCategory = {

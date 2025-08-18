@@ -3,7 +3,7 @@ import { useSnapshot } from 'valtio';
 import { toast } from 'sonner';
 import { videoState, videoActions } from '../store/videoStore';
 import { settingsActions, useSettings } from '../store/settingsStore';
-import { electronMethods } from '../renderer/ipcRenderer';
+import { electronMethods } from '../ipcRenderer';
 
 interface VideoDisplayProps {
   videoRef: React.RefObject<HTMLVideoElement>;

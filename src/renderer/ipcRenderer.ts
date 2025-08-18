@@ -1,4 +1,4 @@
-import { AllIpcHandlers } from '../ipcHandlers';
+import { AllIpcHandlers } from '../electron/ipcHandlers';
 
 export const electronMethods = new Proxy({} as AllIpcHandlers, {
   get(target, prop: keyof AllIpcHandlers) {

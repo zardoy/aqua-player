@@ -1,5 +1,5 @@
-import { electronMethods } from '../renderer/ipcRenderer';
-import { AUDIO_EXTENSIONS, VIDEO_EXTENSIONS } from '../shared/constants';
+import { electronMethods } from '../ipcRenderer';
+import { AUDIO_EXTENSIONS, VIDEO_EXTENSIONS } from '../../shared/constants';
 import { proxy } from 'valtio';
 import { settingsState } from './settingsStore';
 import { toast } from 'sonner';

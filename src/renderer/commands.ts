@@ -1,6 +1,6 @@
 import { videoActions, videoState } from './store/videoStore';
 import type { AllKeyCodes } from './client/appKeymap';
-import { electronMethods } from './renderer/ipcRenderer';
+import { electronMethods } from './ipcRenderer';
 import { toast } from 'sonner';
 
 export interface Command {

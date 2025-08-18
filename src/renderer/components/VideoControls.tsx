@@ -6,7 +6,7 @@ import { MdSubtitles } from 'react-icons/md';
 import { videoState, videoActions } from '../store/videoStore';
 import { useSettings } from '../store/settingsStore';
 import VolumeSlider from './VolumeSlider';
-import { electronMethods } from '../renderer/ipcRenderer';
+import { electronMethods } from '../ipcRenderer';
 
 interface VideoControlsProps {
   showControls: boolean;
