@@ -3,6 +3,7 @@ import { settingsMain } from '../ipcHandlers/settingsHandlers'
 import electronLogger from 'electron-log'
 
 if (settingsMain.app__autoUpdate) {
+    autoUpdater.disableWebInstaller = true
     autoUpdater.allowDowngrade = true
     autoUpdater.logger = electronLogger
     electronLogger.info('auto updater enabled', {

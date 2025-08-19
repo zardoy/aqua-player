@@ -1,3 +1,4 @@
+//@ts-check
 /**
  * @type {import('electron-builder').Configuration}
  */
@@ -14,11 +15,10 @@ const config = {
     owner: "zardoy",
     repo: "aqua-player"
   }],
-  disableWebInstaller: true,
   files: [
     "**/*"
   ],
-  beforeBuild() { },
+  async beforeBuild() { },
   extraResources: [
     {
       from: "assets/thumbnail_control",
