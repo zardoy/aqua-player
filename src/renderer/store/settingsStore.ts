@@ -2,6 +2,7 @@ import { proxy, useSnapshot } from 'valtio';
 import { noCase } from 'change-case';
 import { deafultSettings, AppSettings, settingsUi } from '../../shared/settingsDefinitions';
 import { electronMethods } from '../ipcRenderer';
+import { toast } from 'sonner';
 
 // Create a type for settings categories
 type SettingsCategory = {
@@ -24,6 +25,7 @@ export const settingsState = proxy({
   isSaving: false,
   error: null as string | null,
 });
+globalThis.settings = settingsState
 
 // Helper to get settings categories for UI
 export const getSettingsCategories = (): SettingsCategory[] => {
@@ -81,11 +83,11 @@ export const getSettingsCategories = (): SettingsCategory[] => {
 // Settings actions
 export const settingsActions = {
   // Update a setting
-  updateSetting: <K extends keyof AppSettings>(key: K, value: AppSettings[K]) => {
+  updateSetting: <K extends keyof AppSettings>(key: K, value: AppSettings[K], explicit = false) => {
     const state = settingsState as any;
     state[key] = value;
     state.isDirty = true;
-    settingsActions.syncToMain();
+    settingsActions.syncToMain(explicit);
   },
 
   // Load settings from main process
@@ -96,15 +98,17 @@ export const settingsActions = {
       settingsState.isDirty = false;
       settingsState.error = null;
     } catch (error) {
-      settingsState.error = `Failed to load settings: ${error.message}`;
+      const errorMsg = `Failed to load settings: ${error.message}`;
+      settingsState.error = errorMsg;
+      toast.error(errorMsg);
     }
   },
 
   // Save settings to main process
-  saveSettings: async () => {
+  saveSettings: async (explicit = false) => {
     try {
       settingsState.isSaving = true;
-      const settings = { ...settingsState };
+      const settings = JSON.parse(JSON.stringify(settingsState));
       // Remove non-setting properties
       delete (settings as any).isDirty;
       delete (settings as any).isSaving;
@@ -114,7 +118,11 @@ export const settingsActions = {
       settingsState.isDirty = false;
       settingsState.error = null;
     } catch (error) {
-      settingsState.error = `Failed to save settings: ${error.message}`;
+      const errorMsg = `Failed to save settings: ${error.message}`;
+      settingsState.error = errorMsg;
+      if (explicit) {
+        toast.error(errorMsg);
+      }
     } finally {
       settingsState.isSaving = false;
     }
@@ -124,16 +132,17 @@ export const settingsActions = {
   resetSettings: () => {
     Object.assign(settingsState, deafultSettings);
     settingsState.isDirty = true;
-    settingsActions.syncToMain();
+    settingsActions.syncToMain(true);
+    toast.success('Settings reset to defaults');
   },
 
   // Sync settings to main process (debounced)
   syncToMain: (() => {
     let timeout: NodeJS.Timeout;
-    return () => {
+    return (explicit = false) => {
       clearTimeout(timeout);
       timeout = setTimeout(() => {
-        settingsActions.saveSettings();
+        settingsActions.saveSettings(explicit);
       }, 1000);
     };
   })(),

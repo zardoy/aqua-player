@@ -14,7 +14,7 @@ const InitialSetupDialog: React.FC<InitialSetupDialogProps> = ({ onClose }) => {
   const handleContinue = () => {
     onClose();
     settingsActions.updateSetting('app__autoUpdate', autoUpdate);
-    settingsActions.updateSetting('app__firstRun', false);
+    settingsActions.updateSetting('app__firstRun', false, true);
   };
 
   return (

@@ -2,11 +2,13 @@ const path = require('path');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const fs = require('fs');
 const pkg = JSON.parse(fs.readFileSync('./package.json', 'utf8'));
+const plugins = require('./webpack.plugins');
 
 const pkgOutput = {
   name: pkg.name,
   version: pkg.version,
   description: pkg.description,
+  productName: pkg.productName,
   author: pkg.author,
   main: './main/index.js'
 }
@@ -68,6 +70,7 @@ module.exports = {
       template: './src/renderer/index.html',
       filename: 'index.html'
     }),
+    ...plugins
   ],
   devServer: {
     port: 3000,

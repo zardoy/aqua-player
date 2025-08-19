@@ -12,6 +12,7 @@ try {
 
 export function setupSettingsHandlers() {
   const settingsPath = path.join(app.getPath('userData'), 'settings.json');
+  console.log('settingsPath', settingsPath)
 
   const handlers = {
     async loadSettings() {
