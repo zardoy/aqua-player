@@ -138,6 +138,7 @@ export const settingsActions = {
     };
   })(),
 };
+globalThis.settingsActions = settingsActions
 
 export const useSettings = () => {
   const snap = useSnapshot(settingsState);

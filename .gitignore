@@ -93,3 +93,6 @@ out/
 
 # Generated ffprobe binaries
 dist/
+
+temp*
+release

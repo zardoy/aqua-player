@@ -45,7 +45,7 @@ jobs:
       run: node prepare.mjs ${{ github.run_number }}
 
     - name: Build Windows executable
-      run: pnpm run make
+      run: pnpm run build:nsis
       env:
         GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         APP_VERSION: 0.0.0-alpha.${{ github.run_number }}
@@ -60,7 +60,7 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: aqua-player-windows
-        path: out/make/squirrel.windows/x64/*.exe
+        path: release/Aqua-Player-Setup-*.exe
         retention-days: 30
 
   build-macos:
@@ -102,7 +102,7 @@ jobs:
       run: node prepare.mjs ${{ github.run_number }}
 
     - name: Build macOS DMG
-      run: pnpm run make
+      run: pnpm run build:dmg
       env:
         GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         APP_VERSION: 0.0.0-alpha.${{ github.run_number }}
@@ -111,7 +111,7 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: aqua-player-macos
-        path: out/make/aqua-player.dmg
+        path: release/*.dmg
         retention-days: 30
 
   release:
