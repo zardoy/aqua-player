@@ -50,11 +50,12 @@ jobs:
         GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         APP_VERSION: 0.0.0-alpha.${{ github.run_number }}
 
-    # list the files in the out directory recursively
-    - name: List files in out directory
+    # list the files in the release directory recursively
+    - name: List files in release directory
       shell: powershell
       run: |
-        Get-ChildItem -Path "out\" -Recurse -Force
+        Get-ChildItem -Path "release\" -Recurse -Force
+        Get-ChildItem -Path "dist\" -Recurse -Force
 
     - name: Upload Windows artifacts
       uses: actions/upload-artifact@v4
@@ -106,6 +107,13 @@ jobs:
       env:
         GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         APP_VERSION: 0.0.0-alpha.${{ github.run_number }}
+
+    # list the files in the release directory recursively
+    - name: List files in release directory
+      shell: bash
+      run: |
+        ls -la release/
+        ls -la dist/
 
     - name: Upload macOS artifacts
       uses: actions/upload-artifact@v4
