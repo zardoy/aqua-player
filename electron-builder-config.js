@@ -13,6 +13,7 @@ const config = {
     "dist/**/*",
     "package.json"
   ],
+  beforeBuild() { },
   extraResources: [
     {
       from: "assets/thumbnail_control",
