@@ -2,7 +2,7 @@
  * @type {import('electron-builder').Configuration}
  */
 const config = {
-  appId: "com.vitalyturovsky.aquaplayer",
+  appId: "com.zardoy.aquaplayer",
   productName: "Aqua Player",
   directories: {
     output: "release",
@@ -10,8 +10,7 @@ const config = {
     app: "dist" // Point to webpack output instead of Forge's
   },
   files: [
-    "dist/**/*",
-    "package.json"
+    "**/*"
   ],
   beforeBuild() { },
   extraResources: [
