@@ -2,13 +2,18 @@
  * @type {import('electron-builder').Configuration}
  */
 const config = {
-  appId: "com.zardoy.aquaplayer",
+  appId: "com.vitalyturovsky.aquaplayer",
   productName: "Aqua Player",
   directories: {
     output: "release",
     buildResources: "assets",
     app: "dist" // Point to webpack output instead of Forge's
   },
+  publish: [{
+    provider: "github",
+    owner: "zardoy",
+    repo: "aqua-player"
+  }],
   files: [
     "**/*"
   ],
