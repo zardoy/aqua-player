@@ -1,6 +1,15 @@
 import { app } from 'electron';
 import * as path from 'path';
 import * as fs from 'fs';
+import electronLog from 'electron-log';
+
+// Log ffprobe path and verify it's accessible
+electronLog.info('FFprobe configuration:', {
+  ffprobePath: getFFprobePath(),
+  ffprobeExists: isFFprobeAvailable(),
+  platform: process.platform,
+  arch: process.arch
+});
 
 export function getFFprobePath(): string {
   const platform = process.platform;
