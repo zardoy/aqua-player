@@ -14,6 +14,7 @@ const config = {
     owner: "zardoy",
     repo: "aqua-player"
   }],
+  disableWebInstaller: true,
   files: [
     "**/*"
   ],

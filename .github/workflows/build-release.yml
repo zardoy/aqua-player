@@ -62,8 +62,9 @@ jobs:
       with:
         name: aqua-player-windows
         path: |
-          release/Aqua-Player-Setup-*.exe
+          release/Aqua-Player-*.exe
           release/latest.yml
+          release/*.blockmap
         retention-days: 30
 
   build-macos:
@@ -124,6 +125,7 @@ jobs:
         path: |
           release/*.dmg
           release/latest-mac.yml
+          release/*.blockmap
         retention-days: 30
 
   release:
@@ -208,14 +210,24 @@ jobs:
         draft: false
         prerelease: false
 
-    - name: Upload Windows Release Assets
+    - name: Upload Windows Setup
       uses: actions/upload-release-asset@v1
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
         asset_path: ${{ env.WIN_FILE }}
-        asset_name: Aqua-Player-Setup-${{ github.run_number }}.exe
+        asset_name: Aqua-Player-Setup-0.0.0-alpha.${{ github.run_number }}.exe
+        asset_content_type: application/octet-stream
+
+    - name: Upload Windows Setup Blockmap
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: ${{ env.WIN_FILE }}.blockmap
+        asset_name: Aqua-Player-Setup-0.0.0-alpha.${{ github.run_number }}.exe.blockmap
         asset_content_type: application/octet-stream
 
     - name: Upload Windows Latest YML
@@ -235,7 +247,7 @@ jobs:
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
         asset_path: ${{ env.MAC_FILE }}
-        asset_name: Aqua-Player-${{ github.run_number }}-darwin-arm64.dmg
+        asset_name: Aqua-Player-0.0.0-alpha.${{ github.run_number }}.dmg
         asset_content_type: application/octet-stream
 
     - name: Upload macOS Latest YML
