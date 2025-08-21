@@ -1,21 +1,58 @@
 import { defaultKeymap } from '../commands';
 
 export interface KeymapAction {
-  code: AllKeyCodesWithoutModifiers;
+  code: AllKeyCodes;
   description: string;
-  action: () => void;
+  action: (args?: any[]) => void;
   shiftKey?: boolean;
   ctrlKey?: boolean;
   metaKey?: boolean;
   altKey?: boolean;
+  args?: any[]; // BaseArg[] from commands
 }
 
 // Export the keymap from commands.ts
 export { defaultKeymap };
 
 const FOCUSABLE = 'input:not([type="range"]):not([type="slider"]), textarea, select, [contenteditable="true"]';
+
+// Function to prompt for command arguments
+async function promptForArgs(command: KeymapAction): Promise<any[]> {
+  if (!command.args || command.args.length === 0) {
+    return [];
+  }
+
+  const args: any[] = [];
+
+  for (const arg of command.args) {
+    let value: string;
+
+    if (arg.defaultValue !== undefined) {
+      value = prompt(arg.getPromptText()) || arg.defaultValue.toString();
+    } else {
+      value = prompt(arg.getPromptText()) || '';
+    }
+
+    if (arg.required && !value.trim()) {
+      // If required and no value provided, cancel the command
+      return [];
+    }
+
+    try {
+      // Validate and convert the argument
+      const validatedValue = arg.validate(value);
+      args.push(validatedValue);
+    } catch (error) {
+      alert(`Invalid input: ${error.message}`);
+      return []; // Cancel the command if validation fails
+    }
+  }
+
+  return args;
+}
+
 export function setupKeymap() {
-  const handleKeyDown = (e: KeyboardEvent) => {
+  const handleKeyDown = async (e: KeyboardEvent) => {
     // Ignore if any input element is focused
     if (document.activeElement?.matches(FOCUSABLE)) {
       return;
@@ -28,7 +65,17 @@ export function setupKeymap() {
           ((keyAction.metaKey ?? false) == e.metaKey) &&
           ((keyAction.altKey ?? false) == e.altKey)) {
         e.preventDefault();
-        keyAction.action();
+
+        // Check if command needs arguments
+        if (keyAction.args && keyAction.args.some(arg => arg.required)) {
+          const args = await promptForArgs(keyAction);
+          if (args.length > 0 || keyAction.args.every(arg => !arg.required)) {
+            keyAction.action(args);
+          }
+        } else {
+          keyAction.action();
+        }
+
         break;
       }
     }

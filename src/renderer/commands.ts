@@ -7,7 +7,7 @@ import { settingsState } from './store/settingsStore';
 export interface Command {
   name?: string;
   description?: string;
-  action: () => void;
+  action: (args?: any[]) => void;
   category?: string;
   keybind?: {
     code: AllKeyCodes;
@@ -16,6 +16,153 @@ export interface Command {
     metaKey?: boolean;
     altKey?: boolean;
   };
+  args?: BaseArg[];
+}
+
+// Base argument class
+export abstract class BaseArg {
+  constructor(
+    public name: string,
+    public description: string,
+    public required: boolean = true,
+    public defaultValue?: any
+  ) {}
+
+  abstract validate(value: string): any;
+  abstract getPromptText(): string;
+}
+
+// String argument class
+export class StringArg extends BaseArg {
+  constructor(name: string, description: string, required = true, defaultValue?: string) {
+    super(name, description, required, defaultValue);
+  }
+
+  validate(value: string): string {
+    return value.trim();
+  }
+
+  getPromptText(): string {
+    if (this.defaultValue !== undefined) {
+      return `${this.name} (${this.description}) [${this.defaultValue}]:`;
+    }
+    return `${this.name} (${this.description}):`;
+  }
+
+  static optional(name: string, description: string, defaultValue?: string): StringArg {
+    return new StringArg(name, description, false, defaultValue);
+  }
+
+  static required(name: string, description: string): StringArg {
+    return new StringArg(name, description, true);
+  }
+}
+
+// Number argument class
+export class NumberArg extends BaseArg {
+  constructor(
+    name: string,
+    description: string,
+    required = true,
+    defaultValue?: number,
+    public min?: number,
+    public max?: number
+  ) {
+    super(name, description, required, defaultValue);
+  }
+
+  validate(value: string): number {
+    const num = parseFloat(value);
+    if (isNaN(num)) {
+      throw new Error(`${this.name} must be a valid number`);
+    }
+    if (this.min !== undefined && num < this.min) {
+      throw new Error(`${this.name} must be at least ${this.min}`);
+    }
+    if (this.max !== undefined && num > this.max) {
+      throw new Error(`${this.name} must be at most ${this.max}`);
+    }
+    return num;
+  }
+
+  getPromptText(): string {
+    let prompt = `${this.name} (${this.description})`;
+    if (this.min !== undefined && this.max !== undefined) {
+      prompt += ` [${this.min}-${this.max}]`;
+    } else if (this.min !== undefined) {
+      prompt += ` [min: ${this.min}]`;
+    } else if (this.max !== undefined) {
+      prompt += ` [max: ${this.max}]`;
+    }
+    if (this.defaultValue !== undefined) {
+      prompt += ` [${this.defaultValue}]:`;
+    } else {
+      prompt += ':';
+    }
+    return prompt;
+  }
+
+  static optional(name: string, description: string, defaultValue?: number, min?: number, max?: number): NumberArg {
+    return new NumberArg(name, description, false, defaultValue, min, max);
+  }
+
+  static required(name: string, description: string, min?: number, max?: number): NumberArg {
+    return new NumberArg(name, description, true, undefined, min, max);
+  }
+}
+
+// Time argument class for MM:SS or seconds format
+export class TimeArg extends BaseArg {
+  constructor(name: string, description: string, required = true, defaultValue?: string) {
+    super(name, description, required, defaultValue);
+  }
+
+  validate(value: string): number {
+    const timeArg = value.trim();
+    let timeInSeconds: number;
+
+    // Check if it's in MM:SS format
+    if (timeArg.includes(':')) {
+      const parts = timeArg.split(':');
+      if (parts.length === 2) {
+        const minutes = parseInt(parts[0]);
+        const seconds = parseInt(parts[1]);
+        if (!isNaN(minutes) && !isNaN(seconds)) {
+          timeInSeconds = minutes * 60 + seconds;
+        } else {
+          throw new Error('Invalid time format. Use MM:SS or seconds');
+        }
+      } else {
+        throw new Error('Invalid time format. Use MM:SS or seconds');
+      }
+    } else {
+      // Try to parse as seconds
+      timeInSeconds = parseFloat(timeArg);
+      if (isNaN(timeInSeconds)) {
+        throw new Error('Invalid time value');
+      }
+    }
+
+    return timeInSeconds;
+  }
+
+  getPromptText(): string {
+    let prompt = `${this.name} (${this.description})`;
+    if (this.defaultValue !== undefined) {
+      prompt += ` [${this.defaultValue}]:`;
+    } else {
+      prompt += ':';
+    }
+    return prompt;
+  }
+
+  static optional(name: string, description: string, defaultValue?: string): TimeArg {
+    return new TimeArg(name, description, false, defaultValue);
+  }
+
+  static required(name: string, description: string): TimeArg {
+    return new TimeArg(name, description, true);
+  }
 }
 
 // Helper type function to create commands with proper typing
@@ -95,6 +242,29 @@ export const commands = makeCommands({
     action: videoActions.toggleMute,
     category: 'Audio',
     keybind: { code: 'KeyM' }
+  },
+  audio_setVolume: {
+    name: 'Set Volume',
+    description: 'Set volume to a specific percentage (0-100)',
+    action: (args) => {
+      if (!args || args.length === 0) {
+        toast.error('Please provide a volume percentage');
+        return;
+      }
+
+      try {
+        const volumePercent = args[0];
+        const volumeDecimal = volumePercent / 100;
+        videoActions.setVolume(volumeDecimal);
+        toast.success(`Volume set to ${volumePercent}%`);
+      } catch (error) {
+        toast.error(error.message);
+      }
+    },
+    category: 'Audio',
+    args: [
+      NumberArg.required('volume', 'Volume percentage', 0, 100)
+    ]
   },
   view_toggleFullscreen: {
     name: 'Toggle Fullscreen',
@@ -414,6 +584,107 @@ export const commands = makeCommands({
     },
     category: 'Help',
   },
+  video_seekToTime: {
+    name: 'Seek to Specific Time',
+    description: 'Seek to a specific time in seconds or MM:SS format',
+    action: (args) => {
+      if (!args || args.length === 0) {
+        toast.error('Please provide a time value');
+        return;
+      }
+
+      try {
+        const timeInSeconds = args[0];
+        videoActions.setCurrentTime(timeInSeconds, false);
+        toast.success(`Seeked to ${timeInSeconds}s`);
+      } catch (error) {
+        toast.error(error.message);
+      }
+    },
+    category: 'Video',
+    keybind: { code: 'KeyT' },
+    args: [
+      TimeArg.required('time', 'Time in seconds (e.g., 30) or MM:SS format (e.g., 1:30)')
+    ]
+  },
+  video_setPlaybackSpeed: {
+    name: 'Set Playback Speed',
+    description: 'Set playback speed to a specific rate (0.25x to 3x)',
+    action: (args) => {
+      if (!args || args.length === 0) {
+        toast.error('Please provide a playback speed');
+        return;
+      }
+
+      try {
+        const speed = args[0];
+        videoActions.setPlaybackRate(speed);
+        toast.success(`Playback speed set to ${speed}x`);
+      } catch (error) {
+        toast.error(error.message);
+      }
+    },
+    category: 'Video',
+    keybind: { code: 'KeyS', ctrlKey: true },
+    args: [
+      NumberArg.required('speed', 'Playback speed', 0.25, 3)
+    ]
+  },
+  stream_loadUrl: {
+    name: 'Load Specific URL',
+    description: 'Load a specific HTTP/HTTPS URL or file path',
+    action: (args) => {
+      if (!args || args.length === 0) {
+        toast.error('Please provide a URL or file path');
+        return;
+      }
+
+      try {
+        const url = args[0];
+
+        if (url.startsWith('http://') || url.startsWith('https://')) {
+          videoActions.loadStreamUrl(url);
+        } else if (url.match(/^[a-zA-Z]:\\/) || url.match(/^\//)) {
+          videoActions.loadFilePath(url);
+        } else {
+          toast.error('Invalid URL format. Please provide a valid HTTP/HTTPS URL or file path.');
+        }
+      } catch (error) {
+        toast.error(error.message);
+      }
+    },
+    category: 'Streaming',
+    keybind: { code: 'KeyL', ctrlKey: true },
+    args: [
+      StringArg.required('url', 'HTTP/HTTPS URL or file path to load')
+    ]
+  },
+  video_seekForwardOptional: {
+    name: 'Seek Forward (Optional Distance)',
+    description: 'Seek forward by specified distance or default 10 seconds',
+    action: (args) => {
+      const distance = args && args.length > 0 ? args[0] : 10;
+      videoActions.seekForward(distance);
+    },
+    category: 'Video',
+    keybind: { code: 'BracketRight' },
+    args: [
+      NumberArg.optional('distance', 'Distance in seconds to seek forward', 10, 1, 300)
+    ]
+  },
+  video_seekBackwardOptional: {
+    name: 'Seek Backward (Optional Distance)',
+    description: 'Seek backward by specified distance or default 10 seconds',
+    action: (args) => {
+      const distance = args && args.length > 0 ? args[0] : 10;
+      videoActions.seekBackward(distance);
+    },
+    category: 'Video',
+    keybind: { code: 'BracketLeft' },
+    args: [
+      NumberArg.optional('distance', 'Distance in seconds to seek backward', 10, 1, 300)
+    ]
+  },
 });
 
 // Export individual commands for backward compatibility with id added
@@ -444,4 +715,5 @@ export const defaultKeymap = commandsList
     ctrlKey: command.keybind.ctrlKey,
     metaKey: command.keybind.metaKey,
     altKey: command.keybind.altKey,
+    args: command.args, // Include args from the original command
   }));
