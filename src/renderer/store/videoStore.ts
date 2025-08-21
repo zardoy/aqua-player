@@ -119,7 +119,13 @@ export const videoActions = {
   },
   setCurrentTime: (time: number, canContinuePlaying = true) => {
     videoState.currentTime = time;
-    videoState.progress = videoState.duration > 0 ? time / videoState.duration : 0;
+
+    // Only calculate progress if duration is known and finite
+    if (videoState.duration > 0 && videoState.duration !== Infinity) {
+      videoState.progress = time / videoState.duration;
+    } else {
+      videoState.progress = 0;
+    }
 
     // Save position every 5 seconds
     if (videoState.currentFile && time > 0 && time % 5 < 1) {
@@ -131,8 +137,13 @@ export const videoActions = {
     }
   },
   seekForward: (seconds = 10) => {
-    const newTime = Math.min(videoState.currentTime + seconds, videoState.duration);
-    videoActions.setCurrentTime(newTime);
+    const newTime = videoState.currentTime + seconds;
+    // If duration is known and finite, clamp to duration
+    if (videoState.duration > 0 && videoState.duration !== Infinity) {
+      videoActions.setCurrentTime(Math.min(newTime, videoState.duration));
+    } else {
+      videoActions.setCurrentTime(newTime);
+    }
   },
   seekBackward: (seconds = 10) => {
     const newTime = Math.max(videoState.currentTime - seconds, 0);
@@ -144,7 +155,7 @@ export const videoActions = {
 
     if (videoState.fps > 0) {
       frameDuration = 1 / videoState.fps;
-    } else if (videoState.duration > 0) {
+    } else if (videoState.duration > 0 && videoState.duration !== Infinity) {
       // Fallback: estimate 30fps for videos, 1 second for audio
       frameDuration = videoState.fileType && VIDEO_EXTENSIONS.includes(videoState.fileType.toLowerCase()) ? 1/30 : 1;
     } else {
@@ -152,8 +163,13 @@ export const videoActions = {
       frameDuration = 1/30;
     }
 
-    const newTime = Math.min(videoState.currentTime + frameDuration, videoState.duration);
-    videoActions.setCurrentTime(newTime, false);
+    const newTime = videoState.currentTime + frameDuration;
+    // If duration is known and finite, clamp to duration
+    if (videoState.duration > 0 && videoState.duration !== Infinity) {
+      videoActions.setCurrentTime(Math.min(newTime, videoState.duration), false);
+    } else {
+      videoActions.setCurrentTime(newTime, false);
+    }
   },
   previousFrame: () => {
     // More robust frame calculation with fallback
@@ -161,7 +177,7 @@ export const videoActions = {
 
     if (videoState.fps > 0) {
       frameDuration = 1 / videoState.fps;
-    } else if (videoState.duration > 0) {
+    } else if (videoState.duration > 0 && videoState.duration !== Infinity) {
       // Fallback: estimate 30fps for videos, 1 second for audio
       frameDuration = videoState.fileType && VIDEO_EXTENSIONS.includes(videoState.fileType.toLowerCase()) ? 1/30 : 1;
     } else {
@@ -400,8 +416,8 @@ export const videoActions = {
         // Load saved position for this file
         const savedPosition = videoActions.loadPosition(filePath);
         if (savedPosition > 0) {
-          // Set the progress to restore position
-          videoState.progress = savedPosition / (videoState.duration || 1);
+          // Set the current time to restore position
+          videoActions.setCurrentTime(savedPosition, false);
         }
 
         return filePath;

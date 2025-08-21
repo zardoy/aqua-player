@@ -32,19 +32,29 @@ const VideoControlsVisible: React.FC<VideoControlsProps> = ({
 
   // Handle seek bar input
   const handleSeekBarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const progress = parseFloat(e.target.value);
-    videoActions.setProgress(progress);
+    const time = parseFloat(e.target.value);
+    videoActions.setCurrentTime(time, false);
   };
 
   // Update seek bar color
   useEffect(() => {
     const seekBar = seekBarRef.current;
     if (seekBar) {
-      const progress = snap.progress;
-      const percentage = (progress * 100) + '%';
-      seekBar.style.background = `linear-gradient(to right, var(--accent-color) 0%, var(--accent-color) ${percentage}, rgba(255, 255, 255, 0.2) ${percentage})`;
+      if (snap.duration === Infinity || snap.duration <= 0) {
+        // Disable seek bar when duration is unknown
+        seekBar.disabled = true;
+        seekBar.style.background = 'rgba(255, 255, 255, 0.1)';
+        seekBar.style.cursor = 'not-allowed';
+      } else {
+        // Enable seek bar and show progress
+        seekBar.disabled = false;
+        seekBar.style.cursor = 'pointer';
+        const progress = snap.currentTime / snap.duration;
+        const percentage = (progress * 100) + '%';
+        seekBar.style.background = `linear-gradient(to right, var(--accent-color) 0%, var(--accent-color) ${percentage}, rgba(255, 255, 255, 0.2) ${percentage})`;
+      }
     }
-  }, [snap.progress]);
+  }, [snap.currentTime, snap.duration]);
 
   // Update volume bar color
   useEffect(() => {
@@ -81,9 +91,9 @@ const VideoControlsVisible: React.FC<VideoControlsProps> = ({
           ref={seekBarRef}
           className="seek-bar"
           min="0"
-          max="1"
-          step="0.001"
-          value={snap.progress}
+          max={snap.duration === Infinity || snap.duration <= 0 ? 0 : snap.duration}
+          step="0.1"
+          value={snap.duration === Infinity || snap.duration <= 0 ? 0 : snap.currentTime}
           onChange={handleSeekBarChange}
           tabIndex={-1}
         />
@@ -187,7 +197,7 @@ const VideoControls: React.FC<VideoControlsProps> = (props) => {
       const target = e.target as HTMLElement;
       let hasScrollableParent = false
       let currentElement = target;
-      while (currentElement.parentElement) {
+      while (currentElement?.parentElement) {
         if (currentElement.scrollHeight > currentElement.clientHeight) {
           hasScrollableParent = true;
           break;
@@ -278,7 +288,7 @@ const ToolbarItem: React.FC<ToolbarItemProps> = ({
     case 'timeDisplay':
       return (
         <div className="time-display">
-          {formatTime(snap.currentTime)} / {formatTime(snap.duration)}
+          {formatTime(snap.currentTime)} / {snap.duration === Infinity ? '??:??' : formatTime(snap.duration)}
         </div>
       );
 

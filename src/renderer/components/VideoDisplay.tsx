@@ -106,11 +106,9 @@ const VideoDisplay: React.FC<VideoDisplayProps> = ({ videoRef }) => {
     const video = videoRef.current;
     if (!video || video.seeking) return;
 
-    const targetTime = snap.progress * snap.duration;
-    if (Math.abs(video.currentTime - targetTime) > 0.5) {
-      video.currentTime = targetTime;
-    }
-  }, [snap.progress, snap.duration, videoRef]);
+    // No need for progress-based seeking since we use direct time values in the seek bar
+    // The seek bar now directly calls setCurrentTime with the time value
+  }, [videoRef]);
 
   const playVideo = () => {
     const video = videoRef.current;
