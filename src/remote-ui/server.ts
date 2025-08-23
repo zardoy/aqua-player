@@ -71,7 +71,7 @@ export class RemoteUIServer {
       console.log(`Access URL: http://localhost:${this.port}`);
     });
 
-    this.server.on('error', (error) => {
+    this.server.on('error', (error: any) => {
       if (error.code === 'EADDRINUSE') {
         console.log(`Port ${this.port} is in use, trying another port...`);
         this.port = this.getRandomPort();
@@ -123,7 +123,7 @@ export class RemoteUIServer {
 
   private handleHttpRequest(req: http.IncomingMessage, res: http.ServerResponse): void {
     const url = req.url || '/';
-    
+
     if (url === '/') {
       // Serve the main HTML file
       const htmlPath = path.join(__dirname, '../../.webpack/remote-ui/index.html');
@@ -193,7 +193,7 @@ export class RemoteUIServer {
     if (password === this.password) {
       ws.send(JSON.stringify({ type: 'auth_success' }));
       console.log('Client authenticated successfully');
-      
+
       // Send initial player state
       this.sendPlayerState(ws);
     } else {
@@ -208,7 +208,7 @@ export class RemoteUIServer {
     }
 
     console.log('Executing command:', command);
-    
+
     // Send command to main window via IPC
     this.mainWindow.webContents.send('remote-ui-command', command);
   }

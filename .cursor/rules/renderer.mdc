@@ -1,6 +1,6 @@
 ---
 description:
-globs: src/**
+globs: src/renderer/**
 alwaysApply: false
 ---
 Do not introduce code duplication, use shared functions and split jsx into smaller components in the same file. If you feel it would make code too bloated because of props creating, feel free to use valtio proxy objects for local state managing.

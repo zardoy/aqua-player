@@ -48,22 +48,26 @@ jobs:
       run: node prepare.mjs ${{ github.run_number }}
 
     - name: Build Windows executable
-      run: pnpm run make
+      run: pnpm run build:nsis
       env:
         GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         APP_VERSION: 0.0.0-alpha.${{ github.run_number }}
 
-    # list the files in the out directory recursively
-    - name: List files in out directory
+    # list the files in the release directory recursively
+    - name: List files in release directory
       shell: powershell
       run: |
-        Get-ChildItem -Path "out\" -Recurse -Force
+        Get-ChildItem -Path "release\" -Recurse -Force
+        Get-ChildItem -Path "dist\" -Recurse -Force
 
     - name: Upload Windows artifacts
       uses: actions/upload-artifact@v4
       with:
         name: aqua-player-windows
-        path: out/make/squirrel.windows/x64/*.exe
+        path: |
+          release/Aqua-Player-*.exe
+          release/latest.yml
+          release/*.blockmap
         retention-days: 30
 
   build-macos:
@@ -99,22 +103,34 @@ jobs:
 
     - name: Build remote UI
       run: pnpm run build:remote-ui
+    - name: Typecheck
+      run: pnpm typecheck
 
     - name: Prepare build metadata
       shell: bash
       run: node prepare.mjs ${{ github.run_number }}
 
     - name: Build macOS DMG
-      run: pnpm run make
+      run: pnpm run build:dmg
       env:
         GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         APP_VERSION: 0.0.0-alpha.${{ github.run_number }}
+
+    # list the files in the release directory recursively
+    - name: List files in release directory
+      shell: bash
+      run: |
+        ls -la release/
+        ls -la dist/
 
     - name: Upload macOS artifacts
       uses: actions/upload-artifact@v4
       with:
         name: aqua-player-macos
-        path: out/make/aqua-player.dmg
+        path: |
+          release/*.dmg
+          release/latest-mac.yml
+          release/*.blockmap
         retention-days: 30
 
   release:
@@ -148,11 +164,17 @@ jobs:
         ls -la ./release-artifacts/macos/
         echo "=== Finding exact filenames ==="
         WIN_FILE=$(find ./release-artifacts/windows/ -name "*.exe" -type f | head -n 1)
+        WIN_LATEST=$(find ./release-artifacts/windows/ -name "latest.yml" -type f | head -n 1)
         MAC_FILE=$(find ./release-artifacts/macos/ -name "*.dmg" -type f | head -n 1)
+        MAC_LATEST=$(find ./release-artifacts/macos/ -name "latest-mac.yml" -type f | head -n 1)
         echo "WIN_FILE=${WIN_FILE}" >> $GITHUB_ENV
+        echo "WIN_LATEST=${WIN_LATEST}" >> $GITHUB_ENV
         echo "MAC_FILE=${MAC_FILE}" >> $GITHUB_ENV
+        echo "MAC_LATEST=${MAC_LATEST}" >> $GITHUB_ENV
         echo "Windows file: ${WIN_FILE}"
+        echo "Windows latest: ${WIN_LATEST}"
         echo "macOS file: ${MAC_FILE}"
+        echo "macOS latest: ${MAC_LATEST}"
 
     - name: Create Release
       id: create_release
@@ -174,6 +196,7 @@ jobs:
           - 🎨 Modern UI with auto-hide controls
           - 📱 Platform-specific window controls
           - 🎯 Customizable accent colors
+          - 🔄 Automatic updates
 
           **Downloads:**
           - Windows: See attached assets
@@ -192,15 +215,35 @@ jobs:
         draft: false
         prerelease: false
 
-    - name: Upload Windows Release Asset
+    - name: Upload Windows Setup
       uses: actions/upload-release-asset@v1
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
         asset_path: ${{ env.WIN_FILE }}
-        asset_name: Aqua-Player-${{ steps.package-version.outputs.version }}-Setup.exe
+        asset_name: Aqua-Player-Setup-0.0.0-alpha.${{ github.run_number }}.exe
         asset_content_type: application/octet-stream
+
+    - name: Upload Windows Setup Blockmap
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: ${{ env.WIN_FILE }}.blockmap
+        asset_name: Aqua-Player-Setup-0.0.0-alpha.${{ github.run_number }}.exe.blockmap
+        asset_content_type: application/octet-stream
+
+    - name: Upload Windows Latest YML
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: ${{ env.WIN_LATEST }}
+        asset_name: latest.yml
+        asset_content_type: application/x-yaml
 
     - name: Upload macOS Release Asset
       uses: actions/upload-release-asset@v1
@@ -209,5 +252,15 @@ jobs:
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
         asset_path: ${{ env.MAC_FILE }}
-        asset_name: aqua-player-${{ steps.package-version.outputs.version }}-darwin-arm64.dmg
+        asset_name: Aqua-Player-0.0.0-alpha.${{ github.run_number }}.dmg
         asset_content_type: application/octet-stream
+
+    - name: Upload macOS Latest YML
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: ${{ env.MAC_LATEST }}
+        asset_name: latest-mac.yml
+        asset_content_type: application/x-yaml

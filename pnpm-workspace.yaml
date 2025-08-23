@@ -3,5 +3,7 @@ nodeLinker: hoisted
 onlyBuiltDependencies:
   - electron
   - electron-winstaller
+  - esbuild
+  - ffmpeg-static
   - fs-xattr
   - macos-alias

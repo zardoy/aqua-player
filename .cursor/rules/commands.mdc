@@ -1,0 +1,7 @@
+---
+description:
+globs: src/renderer/**
+alwaysApply: false
+---
+
+do not add new commands that were not explicitly requested, do not add unused "args" arg until is explicitly requested, do not add new keybindings to commands until epxlicitly requested.
