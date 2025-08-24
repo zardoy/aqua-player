@@ -166,7 +166,7 @@ export class TimeArg extends BaseArg {
 }
 
 // Helper type function to create commands with proper typing
-const makeCommands = <T extends string>(commands: Record<T, Command>): Record<T, Command> => commands;
+const makeCommands = <T extends Record<string, Command>>(commands: T): T & Record<keyof T, Command> => commands;
 
 // Utility type for when you need the array item with id
 export type CommandArrayItem = Command & { id: string };
@@ -294,6 +294,27 @@ export const commands = makeCommands({
     category: 'Subtitles',
     keybind: { code: 'KeyV' }
   },
+  subtitles_toggleSecondary: {
+    name: 'Toggle Secondary Subtitles',
+    description: 'Show or hide secondary subtitles',
+    action: videoActions.toggleSubtitles, // Using same action for now, can be extended later
+    category: 'Subtitles',
+    keybind: { code: 'KeyV', altKey: true }
+  },
+  subtitles_nextTrack: {
+    name: 'Next Subtitle Track',
+    description: 'Switch to next subtitle track',
+    action: videoActions.nextSubtitleTrack,
+    category: 'Subtitles',
+    keybind: { code: 'BracketRight' }
+  },
+  subtitles_previousTrack: {
+    name: 'Previous Subtitle Track',
+    description: 'Switch to previous subtitle track',
+    action: videoActions.previousSubtitleTrack,
+    category: 'Subtitles',
+    keybind: { code: 'BracketLeft' }
+  },
   audio_nextTrack: {
     name: 'Next Audio Track',
     description: 'Switch to next audio track',
@@ -327,14 +348,14 @@ export const commands = makeCommands({
     description: 'Increase video playback rate',
     action: videoActions.increasePlaybackRate,
     category: 'Video',
-    keybind: { code: 'Equal' }
+    keybind: { code: 'Period', shiftKey: true }
   },
   video_decreaseSpeed: {
     name: 'Decrease Playback Speed',
     description: 'Decrease video playback rate',
     action: videoActions.decreasePlaybackRate,
     category: 'Video',
-    keybind: { code: 'Minus' }
+    keybind: { code: 'Comma', shiftKey: true }
   },
   video_resetSpeed: {
     name: 'Reset Playback Speed',
@@ -488,7 +509,7 @@ export const commands = makeCommands({
       const src = videoState.currentFile;
       if (src && (src.startsWith('http://') || src.startsWith('https://'))) {
         try {
-          window.open(src, '_blank');
+          electronMethods.openInBrowser(src);
           toast.success('Opened in browser');
         } catch (error) {
           toast.error('Failed to open in browser');
@@ -625,7 +646,6 @@ export const commands = makeCommands({
       }
     },
     category: 'Video',
-    keybind: { code: 'KeyS', ctrlKey: true },
     args: [
       NumberArg.required('speed', 'Playback speed', 0.25, 3)
     ]
@@ -654,7 +674,6 @@ export const commands = makeCommands({
       }
     },
     category: 'Streaming',
-    keybind: { code: 'KeyL', ctrlKey: true },
     args: [
       StringArg.required('url', 'HTTP/HTTPS URL or file path to load')
     ]
@@ -667,7 +686,6 @@ export const commands = makeCommands({
       videoActions.seekForward(distance);
     },
     category: 'Video',
-    keybind: { code: 'BracketRight' },
     args: [
       NumberArg.optional('distance', 'Distance in seconds to seek forward', 10, 1, 300)
     ]
@@ -680,10 +698,16 @@ export const commands = makeCommands({
       videoActions.seekBackward(distance);
     },
     category: 'Video',
-    keybind: { code: 'BracketLeft' },
     args: [
       NumberArg.optional('distance', 'Distance in seconds to seek backward', 10, 1, 300)
     ]
+  },
+  video_toggleLoop: {
+    name: 'Toggle Loop/Repeat',
+    description: 'Toggle video loop/repeat mode',
+    action: videoActions.toggleLoop,
+    category: 'Video',
+    keybind: { code: 'KeyR' }
   },
 });
 
@@ -698,11 +722,31 @@ export const commandsList: CommandArrayItem[] = Object.entries(commands).map(([i
 });
 
 // Proxy object for running commands by ID
-export const runCommand = new Proxy({} as Record<keyof typeof commands, () => void>, {
+export const runCommand = new Proxy({} as { [K in keyof typeof commands]: (...args: any[]) => void }, {
   get(target, prop: keyof typeof commands) {
     return commands[prop as keyof typeof commands].action;
   }
 });
+
+// Function to run a command by ID with argument prompting
+export const runCommandWithArgs = async (commandId: keyof typeof commands): Promise<void> => {
+  const command = commands[commandId];
+  if (!command) {
+    console.error(`Command not found: ${commandId}`);
+    return;
+  }
+
+  const commandWithArgs = command as Command;
+  if (!commandWithArgs.args || commandWithArgs.args.length === 0) {
+    // No arguments needed, run directly
+    command.action();
+    return;
+  }
+
+  // For now, we'll use a simple approach - this will be enhanced by the UI
+  // The actual argument prompting will be handled in the keymap handler
+  command.action();
+};
 
 // Generate keymap actions from commands for backward compatibility
 export const defaultKeymap = commandsList

@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { commands, commandsList, runCommand, Command, CommandArrayItem } from '../commands';
+import { commands, commandsList, runCommand, Command, CommandArrayItem, BaseArg } from '../commands';
 import KeybindDisplay from './KeybindDisplay';
 import './CommandPalette.css';
 
@@ -189,6 +189,135 @@ const CommandPalette: React.FC<CommandPaletteProps> = ({ isOpen, onClose }) => {
         </motion.div>
       )}
     </AnimatePresence>
+  );
+};
+
+// Simple argument input dialog component
+interface ArgumentInputDialogProps {
+  isOpen: boolean;
+  onClose: () => void;
+  onConfirm: (args: any[]) => void;
+  args: BaseArg[];
+  commandName: string;
+}
+
+const ArgumentInputDialog: React.FC<ArgumentInputDialogProps> = ({
+  isOpen,
+  onClose,
+  onConfirm,
+  args,
+  commandName
+}) => {
+  const [values, setValues] = useState<string[]>(args.map(arg => arg.defaultValue?.toString() || ''));
+  const [errors, setErrors] = useState<string[]>([]);
+
+  const handleInputChange = (index: number, value: string) => {
+    const newValues = [...values];
+    newValues[index] = value;
+    setValues(newValues);
+
+    // Clear error for this field
+    const newErrors = [...errors];
+    newErrors[index] = '';
+    setErrors(newErrors);
+  };
+
+  const handleConfirm = () => {
+    const validatedArgs: any[] = [];
+    const newErrors: string[] = [];
+
+    for (let i = 0; i < args.length; i++) {
+      const arg = args[i];
+      const value = values[i];
+
+      if (arg.required && !value.trim()) {
+        newErrors[i] = `${arg.name} is required`;
+        continue;
+      }
+
+      try {
+        if (value.trim() || arg.required) {
+          const validatedValue = arg.validate(value);
+          validatedArgs.push(validatedValue);
+        } else {
+          validatedArgs.push(arg.defaultValue);
+        }
+      } catch (error) {
+        newErrors[i] = error.message;
+      }
+    }
+
+    if (newErrors.some(error => error)) {
+      setErrors(newErrors);
+      return;
+    }
+
+    onConfirm(validatedArgs);
+    onClose();
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      handleConfirm();
+    } else if (e.key === 'Escape') {
+      onClose();
+    }
+  };
+
+  if (!isOpen) return null;
+
+  return (
+    <motion.div
+      className="command-palette-overlay"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      onClick={onClose}
+    >
+      <motion.div
+        className="command-palette"
+        initial={{ scale: 0.95, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        exit={{ scale: 0.95, opacity: 0 }}
+        transition={{ duration: 0.15 }}
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="command-palette-header">
+          <h3>Enter Arguments for: {commandName}</h3>
+        </div>
+
+        <div className="command-palette-args">
+          {args.map((arg, index) => (
+            <div key={index} className="arg-input-group">
+              <label className="arg-label">
+                {arg.name}
+                {arg.required && <span className="required">*</span>}
+                <span className="arg-description">({arg.description})</span>
+              </label>
+              <input
+                type="text"
+                className={`arg-input ${errors[index] ? 'error' : ''}`}
+                placeholder={arg.getPromptText()}
+                value={values[index]}
+                onChange={(e) => handleInputChange(index, e.target.value)}
+                onKeyDown={handleKeyDown}
+                autoFocus={index === 0}
+              />
+              {errors[index] && <div className="arg-error">{errors[index]}</div>}
+            </div>
+          ))}
+        </div>
+
+        <div className="command-palette-actions">
+          <button className="command-palette-button secondary" onClick={onClose}>
+            Cancel
+          </button>
+          <button className="command-palette-button primary" onClick={handleConfirm}>
+            Execute
+          </button>
+        </div>
+      </motion.div>
+    </motion.div>
   );
 };
 

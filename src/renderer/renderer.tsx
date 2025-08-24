@@ -18,6 +18,7 @@ import FileHistoryPanel from './components/FileHistoryPanel';
 import CommandPalette from './components/CommandPalette';
 import FileAssociationDialog from './components/FileAssociationDialog';
 import InitialSetupDialog from './components/InitialSetupDialog';
+import { ArgumentInputService } from './components/ArgumentInputService';
 import { FOCUSABLE_SELECTOR } from './client/appKeymap';
 
 const VideoPlayer = () => {
@@ -234,6 +235,9 @@ const VideoPlayer = () => {
             isOpen={snap.isCommandPaletteOpen}
             onClose={() => videoActions.toggleCommandPalette()}
           />
+
+          {/* Argument Input Service */}
+          <ArgumentInputService />
 
           {/* File Association Dialog */}
           <AnimatePresence>

@@ -110,3 +110,109 @@
   color: #6c6c6c;
   font-size: 13px;
 }
+
+/* Argument Input Dialog Styles */
+.command-palette-header {
+  padding: 16px;
+  border-bottom: 1px solid #464647;
+}
+
+.command-palette-header h3 {
+  margin: 0;
+  color: #cccccc;
+  font-size: 16px;
+  font-weight: 500;
+}
+
+.command-palette-args {
+  padding: 16px;
+  flex: 1;
+  overflow-y: auto;
+}
+
+.arg-input-group {
+  margin-bottom: 16px;
+}
+
+.arg-label {
+  display: block;
+  margin-bottom: 6px;
+  color: #cccccc;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.arg-description {
+  color: #969696;
+  font-weight: normal;
+  margin-left: 8px;
+}
+
+.required {
+  color: #f44336;
+  margin-left: 4px;
+}
+
+.arg-input {
+  width: 100%;
+  background: #3c3c3c;
+  border: 1px solid #464647;
+  padding: 8px 12px;
+  font-size: 13px;
+  color: #cccccc;
+  outline: none;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  border-radius: 4px;
+}
+
+.arg-input:focus {
+  border-color: #094771;
+}
+
+.arg-input.error {
+  border-color: #f44336;
+}
+
+.arg-error {
+  color: #f44336;
+  font-size: 11px;
+  margin-top: 4px;
+}
+
+.command-palette-actions {
+  padding: 16px;
+  border-top: 1px solid #464647;
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+}
+
+.command-palette-button {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 4px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  transition: background-color 0.2s;
+}
+
+.command-palette-button.primary {
+  background: #094771;
+  color: #ffffff;
+}
+
+.command-palette-button.primary:hover {
+  background: #0d5a8a;
+}
+
+.command-palette-button.secondary {
+  background: #3c3c3c;
+  color: #cccccc;
+  border: 1px solid #464647;
+}
+
+.command-palette-button.secondary:hover {
+  background: #4c4c4c;
+}

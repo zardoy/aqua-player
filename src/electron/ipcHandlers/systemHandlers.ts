@@ -1,4 +1,4 @@
-import { BrowserWindow, shell } from 'electron';
+import { BrowserWindow, dialog, MessageBoxOptions, shell } from 'electron';
 import { autoUpdater } from 'electron-updater';
 
 export function setupSystemHandlers(window: BrowserWindow) {
@@ -64,6 +64,14 @@ export function setupSystemHandlers(window: BrowserWindow) {
     async getRemotePlaybackUrl() {
       // Placeholder - implement actual remote playback URL retrieval
       return 'http://localhost:3000';
+    },
+
+    async openInBrowser(url: string) {
+      await shell.openExternal(url);
+    },
+
+    async showMessageBox(options: MessageBoxOptions) {
+      return await dialog.showMessageBox(window, options);
     }
   };
 

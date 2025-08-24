@@ -1,4 +1,6 @@
-import { defaultKeymap } from '../commands';
+import { commands, defaultKeymap, runCommand } from '../commands';
+import { showArgumentInputDialog } from '../components/ArgumentInputService';
+import { electronMethods } from '../ipcRenderer';
 
 export interface KeymapAction {
   code: AllKeyCodes;
@@ -16,41 +18,6 @@ export { defaultKeymap };
 
 export const FOCUSABLE_SELECTOR = 'input:not([type="range"]):not([type="slider"]), textarea, select, [contenteditable="true"]';
 
-// Function to prompt for command arguments
-async function promptForArgs(command: KeymapAction): Promise<any[]> {
-  if (!command.args || command.args.length === 0) {
-    return [];
-  }
-
-  const args: any[] = [];
-
-  for (const arg of command.args) {
-    let value: string;
-
-    if (arg.defaultValue !== undefined) {
-      value = prompt(arg.getPromptText()) || arg.defaultValue.toString();
-    } else {
-      value = prompt(arg.getPromptText()) || '';
-    }
-
-    if (arg.required && !value.trim()) {
-      // If required and no value provided, cancel the command
-      return [];
-    }
-
-    try {
-      // Validate and convert the argument
-      const validatedValue = arg.validate(value);
-      args.push(validatedValue);
-    } catch (error) {
-      alert(`Invalid input: ${error.message}`);
-      return []; // Cancel the command if validation fails
-    }
-  }
-
-  return args;
-}
-
 export function setupKeymap() {
   const handleKeyDown = async (e: KeyboardEvent) => {
     // Ignore if any input element is focused
@@ -66,16 +33,30 @@ export function setupKeymap() {
           ((keyAction.altKey ?? false) == e.altKey)) {
         e.preventDefault();
 
-        // Check if command needs arguments
-        if (keyAction.args && keyAction.args.some(arg => arg.required)) {
-          const args = await promptForArgs(keyAction);
-          if (args.length > 0 || keyAction.args.every(arg => !arg.required)) {
-            keyAction.action(args);
+         // Check if command needs arguments
+        if (keyAction.args && keyAction.args.length > 0) {
+          // Find the command by description to get the full command info
+          const commandEntry = Object.entries(commands).find(([_, cmd]) => cmd.name === keyAction.description);
+          if (commandEntry) {
+            const [commandId, command] = commandEntry;
+            showArgumentInputDialog({
+              args: command.args || [],
+              commandName: command.name || commandId,
+              onConfirm: (args) => {
+                runCommand[commandId](args);
+              },
+              onCancel: () => {
+                // Command cancelled
+              }
+            });
+          } else {
+            // Fallback: execute without args
+            keyAction.action();
           }
         } else {
+          // Execute the command action directly
           keyAction.action();
         }
-
         break;
       }
     }

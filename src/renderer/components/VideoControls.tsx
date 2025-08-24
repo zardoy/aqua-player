@@ -7,6 +7,7 @@ import { videoState, videoActions } from '../store/videoStore';
 import { useSettings } from '../store/settingsStore';
 import VolumeSlider from './VolumeSlider';
 import { electronMethods } from '../ipcRenderer';
+import { runCommand } from '../commands';
 
 interface VideoControlsProps {
   showControls: boolean;
@@ -305,7 +306,7 @@ const ToolbarItem: React.FC<ToolbarItemProps> = ({
     case 'loop':
       return (
         <button
-          onClick={() => videoActions.toggleLoop()}
+          onClick={() => runCommand.video_toggleLoop()}
           className={`control-button ${!snap.isLooping ? 'inactive' : ''}`}
           tabIndex={-1}
         >
@@ -316,7 +317,7 @@ const ToolbarItem: React.FC<ToolbarItemProps> = ({
     case 'playlist':
       return (
         <button
-          onClick={() => videoActions.togglePlaylist()}
+          onClick={() => runCommand.view_togglePlaylist()}
           className={`control-button ${!snap.isPlaylistOpen ? 'inactive' : ''}`}
           tabIndex={-1}
           title="Toggle Playlist (P)"
@@ -328,7 +329,7 @@ const ToolbarItem: React.FC<ToolbarItemProps> = ({
     case 'history':
       return (
         <button
-          onClick={() => videoActions.toggleHistory()}
+          onClick={() => runCommand.view_toggleHistory()}
           className={`control-button ${!snap.isHistoryOpen ? 'inactive' : ''}`}
           tabIndex={-1}
           title="Toggle File History"
@@ -341,7 +342,7 @@ const ToolbarItem: React.FC<ToolbarItemProps> = ({
       return (
         <div className="download-speed">
           <div className="speed-indicator">
-            <div className="speed-dot"></div>
+            <div className="connected-indicator"></div>
             1.2 MB/s
           </div>
         </div>
@@ -350,7 +351,7 @@ const ToolbarItem: React.FC<ToolbarItemProps> = ({
     case 'subtitles':
       return snap.subtitleTracks.length > 0 ? (
         <button
-          onClick={() => videoActions.toggleSubtitles()}
+          onClick={() => runCommand.subtitles_toggle()}
           className={`control-button ${snap.showSubtitles ? 'active' : ''}`}
           tabIndex={-1}
         >
@@ -360,7 +361,7 @@ const ToolbarItem: React.FC<ToolbarItemProps> = ({
 
     case 'openFile':
       return (
-        <button onClick={() => videoActions.loadFile()} className="control-button" tabIndex={-1}>
+        <button onClick={() => runCommand.file_open()} className="control-button" tabIndex={-1}>
           <FaFolder />
         </button>
       );

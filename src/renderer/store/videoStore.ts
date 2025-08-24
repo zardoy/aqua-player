@@ -479,6 +479,17 @@ export const videoActions = {
       videoState.audioTracks.length - 1 : videoState.currentAudioTrack - 1;
     videoActions.selectAudioTrack(prevIndex);
   },
+  nextSubtitleTrack: () => {
+    if (videoState.subtitleTracks.length === 0) return;
+    const nextIndex = (videoState.currentSubtitleTrack + 1) % videoState.subtitleTracks.length;
+    videoActions.selectSubtitleTrack(nextIndex);
+  },
+  previousSubtitleTrack: () => {
+    if (videoState.subtitleTracks.length === 0) return;
+    const prevIndex = videoState.currentSubtitleTrack - 1 < 0 ?
+      videoState.subtitleTracks.length - 1 : videoState.currentSubtitleTrack - 1;
+    videoActions.selectSubtitleTrack(prevIndex);
+  },
 
   // Duration and time
   setDuration: (duration: number) => {
