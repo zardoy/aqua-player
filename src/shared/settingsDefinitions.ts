@@ -59,6 +59,7 @@ export const settingsUi: Partial<Record<keyof AppSettings, boolean | {
     },
     ui__showTime: {
         choices: ['always', 'never', 'ui-active'],
+        tip: 'Controls when the system time clock is displayed. "always" - always visible, "never" - hidden, "ui-active" - only visible when controls are shown.',
     },
     advanced__mpvExecutable: {
         tip: 'The current path to the mpv executable.',

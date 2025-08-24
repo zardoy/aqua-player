@@ -86,11 +86,18 @@ export function setupWindowHandlers(mainWindow: BrowserWindow) {
   return handlers;
 }
 
+export const getAssetsPath = () => {
+  if (process.env.DEV) {
+    return path.join(app.getAppPath(), '../../assets/thumbnail_control/')
+  }
+  return path.join(app.getAppPath(), 'assets/thumbnail_control/')
+}
+
 export const thumbnailToolbar = (window: BrowserWindow) => {
-  const isPlaying = false;
+  let currentlyPlaying = false;
   const setButtons = () => {
     let containerPath = ''
-    for (const possiblePath of [path.join(app.getAppPath(), 'assets/thumbnail_control/'), path.join(process.resourcesPath, 'thumbnail_control/')]) {
+    for (const possiblePath of [getAssetsPath(), path.join(process.resourcesPath, 'thumbnail_control/')]) {
       if (fs.existsSync(path.join(possiblePath, 'prev.png'))) {
         containerPath = possiblePath;
         break;
@@ -107,7 +114,7 @@ export const thumbnailToolbar = (window: BrowserWindow) => {
         },
         {
           tooltip: 'Play/Pause',
-          icon: nativeImage.createFromPath(path.join(containerPath, isPlaying ? 'pause' : 'play', '.png')),
+          icon: nativeImage.createFromPath(path.join(containerPath, `${currentlyPlaying ? 'pause' : 'play'}.png`)),
           click: () => window?.webContents.send('thumbnail-control', 'playpause')
         },
         {
@@ -130,7 +137,7 @@ export const thumbnailToolbar = (window: BrowserWindow) => {
 
     // Update play/pause button based on playback state
     ipcMain.on('update-progress-bar', (_event, { isPlaying }) => {
-      isPlaying = isPlaying;
+      currentlyPlaying = isPlaying;
       setButtons();
     });
   }

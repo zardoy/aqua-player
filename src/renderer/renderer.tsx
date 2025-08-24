@@ -177,9 +177,14 @@ const VideoPlayer = () => {
             />
           )}
         </AnimatePresence>
+
+        {/* System Time Display - respects ui__showTime setting */}
+        {settings.ui__showTime === 'always' ||
+         (settings.ui__showTime === 'ui-active' && showControls) ? (
         <div className={`floating-time-container ${window.electronUtils.platform === 'win32' ? 'windows' : ''}`}>
           <div className="floating-time">{currentTime}</div>
         </div>
+        ) : null}
 
         <div
           style={{ cursor: showControls ? 'default' : 'none' }}
