@@ -33,6 +33,7 @@ const CommandPalette: React.FC<CommandPaletteProps> = ({ isOpen, onClose }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedIndex, setSelectedIndex] = useState(0);
   const inputRef = useRef<HTMLInputElement>(null);
+  const resultsRef = useRef<HTMLDivElement>(null);
 
   // Filter and sort commands
   const filteredCommands = React.useMemo(() => {
@@ -74,6 +75,19 @@ const CommandPalette: React.FC<CommandPaletteProps> = ({ isOpen, onClose }) => {
     }
   }, [isOpen]);
 
+  // Scroll selected item into view
+  const scrollSelectedIntoView = (index: number) => {
+    if (resultsRef.current) {
+      const selectedElement = resultsRef.current.children[index] as HTMLElement;
+      if (selectedElement) {
+        selectedElement.scrollIntoView({
+          block: 'nearest',
+          behavior: 'instant'
+        });
+      }
+    }
+  };
+
   const executeCommand = (command: CommandArrayItem) => {
     try {
       command.action();
@@ -89,14 +103,21 @@ const CommandPalette: React.FC<CommandPaletteProps> = ({ isOpen, onClose }) => {
       case 'Escape':
         onClose();
         break;
-      case 'ArrowDown':
+      case 'ArrowDown': {
         e.preventDefault();
-        setSelectedIndex(prev => Math.min(prev + 1, filteredCommands.length - 1));
+          const newDownIndex = Math.min(selectedIndex + 1, filteredCommands.length - 1);
+          setSelectedIndex(newDownIndex);
+          scrollSelectedIntoView(newDownIndex);
+          break;
+        }
         break;
-      case 'ArrowUp':
+      case 'ArrowUp': {
         e.preventDefault();
-        setSelectedIndex(prev => Math.max(prev - 1, 0));
-        break;
+          const newUpIndex = Math.max(selectedIndex - 1, 0);
+          setSelectedIndex(newUpIndex);
+          scrollSelectedIntoView(newUpIndex);
+          break;
+        }
       case 'Enter':
         e.preventDefault();
         if (filteredCommands[selectedIndex]) {
@@ -139,7 +160,7 @@ const CommandPalette: React.FC<CommandPaletteProps> = ({ isOpen, onClose }) => {
               onKeyDown={handleKeyDown}
             />
 
-            <div className="command-palette-results">
+            <div className="command-palette-results" ref={resultsRef}>
               {filteredCommands.length === 0 ? (
                 <div className="command-palette-empty">
                   No commands found matching "{searchTerm}"

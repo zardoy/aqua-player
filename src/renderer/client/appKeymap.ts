@@ -14,7 +14,7 @@ export interface KeymapAction {
 // Export the keymap from commands.ts
 export { defaultKeymap };
 
-const FOCUSABLE = 'input:not([type="range"]):not([type="slider"]), textarea, select, [contenteditable="true"]';
+export const FOCUSABLE_SELECTOR = 'input:not([type="range"]):not([type="slider"]), textarea, select, [contenteditable="true"]';
 
 // Function to prompt for command arguments
 async function promptForArgs(command: KeymapAction): Promise<any[]> {
@@ -54,7 +54,7 @@ async function promptForArgs(command: KeymapAction): Promise<any[]> {
 export function setupKeymap() {
   const handleKeyDown = async (e: KeyboardEvent) => {
     // Ignore if any input element is focused
-    if (document.activeElement?.matches(FOCUSABLE)) {
+    if (document.activeElement?.matches(FOCUSABLE_SELECTOR)) {
       return;
     }
 
@@ -84,7 +84,7 @@ export function setupKeymap() {
   // on focus element, remove focus
   const handleFocus = (e: FocusEvent) => {
     const target = e.target as HTMLElement;
-    if (!target.matches(FOCUSABLE)) {
+    if (!target.matches(FOCUSABLE_SELECTOR)) {
       target.blur();
     }
   };

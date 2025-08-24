@@ -18,6 +18,7 @@ import FileHistoryPanel from './components/FileHistoryPanel';
 import CommandPalette from './components/CommandPalette';
 import FileAssociationDialog from './components/FileAssociationDialog';
 import InitialSetupDialog from './components/InitialSetupDialog';
+import { FOCUSABLE_SELECTOR } from './client/appKeymap';
 
 const VideoPlayer = () => {
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -122,6 +123,10 @@ const VideoPlayer = () => {
     };
 
     const handleKeyDown = (e: KeyboardEvent) => {
+      if (document.activeElement?.matches(FOCUSABLE_SELECTOR)) {
+        return;
+      }
+
       if (e.key === 'Backspace') {
         isForceHidden = true;
         setShowControls(false);
