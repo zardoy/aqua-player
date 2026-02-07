@@ -33,10 +33,16 @@ app.on('second-instance', (_event, argv) => {
   if (mainWindow.isMinimized()) mainWindow.restore();
   mainWindow.focus();
 
-  // Only send the file path if it exists and looks like a valid path
-  const filePath = argv[1];
-  if (filePath && (filePath.includes('/') || filePath.includes('\\'))) {
-    mainWindow.webContents.send('open-file', filePath);
+  // Log argv for diagnostics and attempt to locate a file path argument
+  console.info('second-instance argv:', argv);
+  const fileArg = argv.slice(1).find((a) => {
+    if (!a) return false;
+    if (a.startsWith('-')) return false; // skip flags
+    return a.includes('/') || a.includes('\\') || /^[a-zA-Z]:\\/.test(a);
+  });
+  if (fileArg) {
+    console.info('second-instance opening file:', fileArg);
+    mainWindow.webContents.send('open-file', fileArg);
   }
 });
 
@@ -143,7 +149,28 @@ app.whenReady().then(async () => {
 
   createWindow();
 
-  await setupWindowsFileAssociations();
+  // After window is created, forward any initial file argument passed on cold start
+  try {
+    // Initialize IPC handlers (this also wires up log forwarding)
+    // setupWindowsFileAssociations may have been called already by settings handler; re-run to be safe
+    await setupWindowsFileAssociations();
+
+    // Log initial argv so frontend receives it through the automatic log forwarding
+    console.info('initial process.argv:', process.argv);
+
+    // Look for a plausible file path in the initial argv (skip executable path and flags)
+    const initialFile = process.argv.slice(1).find((a) => {
+      if (!a) return false;
+      if (a.startsWith('-')) return false;
+      return a.includes('/') || a.includes('\\') || /^[a-zA-Z]:\\/.test(a);
+    });
+    if (initialFile && mainWindow) {
+      console.info('initial open-file:', initialFile);
+      mainWindow.webContents.send('open-file', initialFile);
+    }
+  } catch (err) {
+    console.error('Error processing initial argv or file associations:', err);
+  }
 });
 
 // Quit when all windows are closed, except on macOS. There, it's common

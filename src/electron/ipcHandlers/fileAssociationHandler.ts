@@ -14,6 +14,10 @@ export async function setupWindowsFileAssociations() {
         // Set up basic application information
         await Registry.set(`HKCU\\Software\\${APP_ID}\\Capabilities`, 'ApplicationName', APP_NAME);
         await Registry.set(`HKCU\\Software\\${APP_ID}\\Capabilities`, 'ApplicationDescription', 'Modern video player for local files');
+        // Provide an icon so Windows can show the app in the Default Programs UI
+        await Registry.set(`HKCU\\Software\\${APP_ID}\\Capabilities`, 'ApplicationIcon', `${process.execPath},0`);
+        // Provide install location (helps some Windows UIs)
+        await Registry.set(`HKCU\\Software\\${APP_ID}`, 'InstallLocation', process.execPath);
 
         // Set up file associations for each video format
         for (const ext of VIDEO_EXTENSIONS) {
