@@ -68,7 +68,6 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({ onClose }) => {
           <div className="settings-footer" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
             <span className="app-version">{process.env.APP_VERSION || ''}</span>
             <div>
-              {snap.isDirty && <span className="unsaved-changes" style={{ marginRight: 12 }}>Unsaved changes</span>}
               <button onClick={handleReset} className="reset-button">
                 Reset to Defaults
               </button>

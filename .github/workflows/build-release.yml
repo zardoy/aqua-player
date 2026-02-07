@@ -259,3 +259,18 @@ jobs:
         asset_path: ${{ env.MAC_LATEST }}
         asset_name: latest-mac.yml
         asset_content_type: application/x-yaml
+
+    - name: Prepare Release Metadata
+      run: |
+        mkdir -p release-metadata
+        cp ./release-artifacts/windows/latest.yml release-metadata/latest.yml
+        cp ./release-artifacts/macos/latest-mac.yml release-metadata/latest-mac.yml
+        ls -la release-metadata/
+
+    - name: Deploy Release Info to GitHub Pages
+      uses: peaceiris/actions-gh-pages@v3
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        publish_dir: ./release-metadata
+        publish_branch: release-info
+        force_orphan: true

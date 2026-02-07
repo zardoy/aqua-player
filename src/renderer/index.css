@@ -493,11 +493,6 @@ body {
   align-items: center;
 }
 
-.settings-footer .unsaved-changes {
-  font-size: 12px;
-  color: #ff9800;
-}
-
 .settings-footer .reset-button {
   background: rgba(255, 80, 80, 0.2);
   color: #ff5050;
