@@ -709,6 +709,30 @@ export const commands = makeCommands({
     category: 'Video',
     keybind: { code: 'KeyR' }
   },
+  marker_set: {
+    name: 'Set Marker',
+    description: 'Set a marker at the current playback position',
+    action: () => {
+      videoActions.setMarker();
+      toast.success('Marker set');
+    },
+    category: 'Video',
+    keybind: { code: 'KeyI', shiftKey: true }
+  },
+  marker_seek: {
+    name: 'Seek To Marker',
+    description: 'Seek to previously set marker',
+    action: () => videoActions.seekToMarker(),
+    category: 'Video',
+    keybind: { code: 'KeyI' }
+  },
+  marker_showDiff: {
+    name: 'Show Marker Time Diff',
+    description: 'Show time difference in ms between current position and marker',
+    action: () => videoActions.showTimeDiff(),
+    category: 'Video',
+    keybind: { code: 'KeyI', altKey: true }
+  },
 });
 
 // Export individual commands for backward compatibility with id added

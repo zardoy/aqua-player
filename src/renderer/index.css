@@ -123,16 +123,42 @@ body {
 .progress-container {
   display: flex;
   align-items: center;
-  margin-bottom: 10px;
+  margin-bottom: 13px; /* scaled 1.3x */
+}
+
+/* Marker dot on progress bar */
+.progress-marker {
+  position: absolute;
+  top: 8px; /* adjusted for larger seek bar */
+  width: 14px; /* scaled */
+  height: 14px;
+  border-radius: 50%;
+  background: #4ade80; /* green */
+  transform: translateX(-50%);
+  z-index: 10;
+  box-shadow: 0 0 8px rgba(74, 222, 128, 0.6);
+}
+
+.time-diff-overlay {
+  position: absolute;
+  left: 50%;
+  top: -50px;
+  transform: translateX(-50%);
+  background: transparent;
+  color: #ff4444;
+  font-size: 36px;
+  font-weight: 700;
+  text-shadow: 0 2px 6px rgba(0,0,0,0.6);
+  z-index: 20;
 }
 
 .seek-bar {
   -webkit-appearance: none;
   flex-grow: 1;
-  height: 5px;
+  height: 7px; /* scaled */
   background: rgba(255, 255, 255, 0.2);
   outline: none;
-  border-radius: 5px;
+  border-radius: 6px;
   margin-right: 10px;
   cursor: pointer;
 }
@@ -147,21 +173,21 @@ body {
 .seek-bar::-webkit-slider-thumb {
   -webkit-appearance: none;
   appearance: none;
-  width: 12px;
-  height: 12px;
+  width: 16px; /* scaled */
+  height: 16px;
   background: var(--accent-color);
   cursor: pointer;
   border-radius: 50%;
-  box-shadow: 0 0 5px rgba(0, 170, 255, 0.5);
+  box-shadow: 0 0 6px rgba(0, 170, 255, 0.5);
 }
 
 .seek-bar::-moz-range-thumb {
-  width: 12px;
-  height: 12px;
+  width: 16px;
+  height: 16px;
   background: var(--accent-color);
   cursor: pointer;
   border-radius: 50%;
-  box-shadow: 0 0 5px rgba(0, 170, 255, 0.5);
+  box-shadow: 0 0 6px rgba(0, 170, 255, 0.5);
 }
 
 .time-display {

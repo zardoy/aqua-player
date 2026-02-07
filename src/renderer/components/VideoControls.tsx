@@ -88,6 +88,18 @@ const VideoControlsVisible: React.FC<VideoControlsProps> = ({
           onChange={handleSeekBarChange}
           tabIndex={-1}
         />
+        {snap.markerTime !== null && snap.duration > 0 && (
+          <div
+            className="progress-marker"
+            style={{ left: `${(snap.markerTime / snap.duration) * 100}%` }}
+            title={`Marker @ ${Math.round(snap.markerTime * 1000)} ms`}
+          />
+        )}
+        {snap.showTimeDiff && snap.timeDiffMs !== null && (
+          <div className="time-diff-overlay">
+            {`${snap.timeDiffMs} ms`}
+          </div>
+        )}
       </div>
 
       <div className="controls-row">

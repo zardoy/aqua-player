@@ -276,6 +276,7 @@ const VideoDisplay: React.FC<VideoDisplayProps> = ({ videoRef }) => {
       loop={snap.isLooping}
       ref={videoRef}
       className="video-player"
+      title={snap.currentFile ? (snap.currentFile.split(/[/\\]/).pop() || '') : ''}
       onClick={(e) => e.stopPropagation()}
     />
   );

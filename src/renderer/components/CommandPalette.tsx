@@ -75,6 +75,16 @@ const CommandPalette: React.FC<CommandPaletteProps> = ({ isOpen, onClose }) => {
     }
   }, [isOpen]);
 
+  // Clear search input and reset selection when reopened
+  useEffect(() => {
+    if (isOpen) {
+      setSearchTerm('');
+      setSelectedIndex(0);
+      // ensure input gets focus after clearing
+      setTimeout(() => inputRef.current?.focus(), 0);
+    }
+  }, [isOpen]);
+
   // Scroll selected item into view
   const scrollSelectedIntoView = (index: number) => {
     if (resultsRef.current) {

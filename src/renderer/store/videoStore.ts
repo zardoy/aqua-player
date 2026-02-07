@@ -75,6 +75,12 @@ export const videoState = proxy({
   isCommandPaletteOpen: false,
   isFileAssociationDialogOpen: false,
 
+  // Marker state (in seconds)
+  markerTime: null as number | null,
+  // Time diff UI
+  timeDiffMs: null as number | null,
+  showTimeDiff: false,
+
   // Error handling
   hasError: false,
   errorMessage: '',
@@ -588,6 +594,30 @@ export const videoActions = {
 
   toggleHistory: () => {
     videoState.isHistoryOpen = !videoState.isHistoryOpen;
+  },
+
+  // Marker functions
+  setMarker: (time?: number) => {
+    const t = typeof time === 'number' ? time : videoState.currentTime;
+    videoState.markerTime = t;
+  },
+  clearMarker: () => {
+    videoState.markerTime = null;
+  },
+  seekToMarker: () => {
+    if (videoState.markerTime !== null) {
+      videoActions.setCurrentTime(videoState.markerTime);
+    }
+  },
+  showTimeDiff: () => {
+    if (videoState.markerTime === null) return;
+    const diff = (videoState.currentTime - videoState.markerTime) * 1000;
+    videoState.timeDiffMs = Math.round(diff);
+    videoState.showTimeDiff = true;
+    setTimeout(() => {
+      videoState.showTimeDiff = false;
+      videoState.timeDiffMs = null;
+    }, 2000);
   },
 
   // File history management
