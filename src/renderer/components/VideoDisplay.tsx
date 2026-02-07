@@ -167,6 +167,56 @@ const VideoDisplay: React.FC<VideoDisplayProps> = ({ videoRef }) => {
     }
   }, [snap.currentFile, videoRef]);
 
+  // Media Session API: support hardware/media keys (next/prev, play/pause, seek)
+  useEffect(() => {
+    if (!snap.currentFile) return;
+    const fileName = snap.currentFile.split(/[/\\]/).pop() || '';
+    const ms = (navigator as any).mediaSession;
+    if (!ms) return;
+
+    try {
+      // Set metadata so OS/media keys UIs can show file title
+      const Metadata = (window as any).MediaMetadata;
+      if (Metadata) {
+        ms.metadata = new Metadata({ title: fileName, artist: '', album: '' });
+      } else {
+        ms.metadata = { title: fileName };
+      }
+
+      ms.playbackState = snap.isPlaying ? 'playing' : 'paused';
+
+      ms.setActionHandler('previoustrack', () => {
+        videoActions.loadPreviousFile();
+      });
+      ms.setActionHandler('nexttrack', () => {
+        videoActions.loadNextFile();
+      });
+      ms.setActionHandler('play', () => videoActions.play());
+      ms.setActionHandler('pause', () => videoActions.pause());
+      ms.setActionHandler('seekbackward', (details: any) => {
+        const seekOffset = details && details.seekOffset ? details.seekOffset : 10;
+        videoActions.seekBackward(seekOffset);
+      });
+      ms.setActionHandler('seekforward', (details: any) => {
+        const seekOffset = details && details.seekOffset ? details.seekOffset : 10;
+        videoActions.seekForward(seekOffset);
+      });
+    } catch (err) {
+      console.warn('Media Session not available or failed to set handlers', err);
+    }
+
+    return () => {
+      try {
+        ms.setActionHandler('previoustrack', null);
+        ms.setActionHandler('nexttrack', null);
+        ms.setActionHandler('play', null);
+        ms.setActionHandler('pause', null);
+        ms.setActionHandler('seekbackward', null);
+        ms.setActionHandler('seekforward', null);
+      } catch { /* ignore */ }
+    };
+  }, [snap.currentFile, snap.isPlaying]);
+
   // Handle Ctrl+wheel zoom and panning
   useEffect(() => {
     const video = videoRef.current;
