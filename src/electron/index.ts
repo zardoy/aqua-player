@@ -7,6 +7,7 @@ import { setupWindowsFileAssociations } from './ipcHandlers/fileAssociationHandl
 import WindowKeeper from 'electron-window-keeper';
 import { thumbnailToolbar } from './ipcHandlers/windowHandlers';
 import './utils/autoUpdater';
+import { settingsMain } from './ipcHandlers/settingsHandlers';
 
 // Replace Forge's magic constants with direct paths
 const MAIN_WINDOW_WEBPACK_ENTRY = process.env.DEV
@@ -57,6 +58,9 @@ app.on('open-file', (event, filePath) => {
 const createWindow = (): void => {
   const windowState = new WindowKeeper();
 
+  // Check if user wants normal border or borderless
+  const useNormalBorder = settingsMain.app__useNormalBorder ?? false;
+
   // Create the browser window.
   mainWindow = new BrowserWindow({
     height: 720,
@@ -72,9 +76,9 @@ const createWindow = (): void => {
       webSecurity: false,
     },
     backgroundColor: '#121212',
-    frame: false, // Make window borderless
-    titleBarStyle: 'hidden',
-    titleBarOverlay: {
+    frame: useNormalBorder, // Use normal border if setting is enabled
+    titleBarStyle: useNormalBorder ? 'default' : 'hidden',
+    titleBarOverlay: useNormalBorder ? undefined : {
       color: 'rgba(0, 0, 0, 0)',
       symbolColor: '#ffffff',
       height: 30,

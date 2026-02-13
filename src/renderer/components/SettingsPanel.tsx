@@ -5,6 +5,7 @@ import { useSnapshot } from 'valtio';
 import { settingsState, settingsActions, getSettingsCategories } from '../store/settingsStore';
 import { videoState } from '../store/videoStore';
 import Modal from './base/Modal';
+import { electronMethods } from '../ipcRenderer';
 
 interface SettingsPanelProps {
   onClose: () => void;
@@ -66,7 +67,14 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({ onClose }) => {
             </div>
           ))}
           <div className="settings-footer" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-            <span className="app-version">{process.env.APP_VERSION || ''}</span>
+            <span 
+              className="app-version" 
+              style={{ cursor: 'pointer', textDecoration: 'underline' }}
+              onClick={() => electronMethods.openInBrowser('https://github.com/zardoy/aqua-player')}
+              title="Open GitHub project page"
+            >
+              {process.env.APP_VERSION || 'v0.0.0'}
+            </span>
             <div>
               <button onClick={handleReset} className="reset-button">
                 Reset to Defaults

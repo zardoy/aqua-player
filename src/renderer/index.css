@@ -657,6 +657,76 @@ body {
   color: #00aaff;
 }
 
+/* Keybindings Configuration */
+.keybindings-container {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.keybinding-category {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.keybinding-category-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: #00aaff;
+  margin: 0;
+  padding-bottom: 8px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.keybinding-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.keybinding-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 12px;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 4px;
+  transition: background 0.2s;
+}
+
+.keybinding-item:hover {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.keybinding-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+}
+
+.keybinding-name {
+  font-size: 13px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.keybinding-description {
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.keybinding-key {
+  font-family: monospace;
+  font-size: 12px;
+  color: #00aaff;
+  padding: 4px 8px;
+  background: rgba(0, 170, 255, 0.1);
+  border-radius: 4px;
+  white-space: nowrap;
+}
+
 /* Error Message */
 .error-message {
   position: absolute;

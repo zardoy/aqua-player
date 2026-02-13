@@ -74,6 +74,7 @@ export const videoState = proxy({
   isKeymapDialogOpen: false,
   isCommandPaletteOpen: false,
   isFileAssociationDialogOpen: false,
+  isKeybindingsDialogOpen: false,
 
   // Marker state (in seconds)
   markerTime: null as number | null,
@@ -114,6 +115,11 @@ export const videoActions = {
       videoState.progress = 0;
       videoState.currentTime = 0;
       videoState.isEnded = false;
+      // Reset video element's time directly when restarting from ended state
+      const video = globalThis.video as HTMLVideoElement;
+      if (video && video.ended) {
+        video.currentTime = 0;
+      }
     }
     videoState.isPlaying = true;
   },
@@ -583,6 +589,9 @@ export const videoActions = {
   },
   toggleFileAssociationDialog: () => {
     videoState.isFileAssociationDialogOpen = !videoState.isFileAssociationDialogOpen;
+  },
+  toggleKeybindingsDialog: () => {
+    videoState.isKeybindingsDialogOpen = !videoState.isKeybindingsDialogOpen;
   },
   toggleLoop: () => {
     videoState.isLooping = !videoState.isLooping;
