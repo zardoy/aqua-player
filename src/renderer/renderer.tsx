@@ -8,6 +8,7 @@ import { videoState, videoActions } from './store/videoStore';
 import { settingsState, settingsActions, useSettings } from './store/settingsStore';
 import SettingsPanel from './components/SettingsPanel';
 import KeymapDialog from './components/KeymapDialog';
+import KeybindingsDialog from './components/KeybindingsDialog';
 import VideoControls from './components/VideoControls';
 import VideoDisplay from './components/VideoDisplay';
 import GlobalListeners from './components/GlobalListeners';
@@ -226,6 +227,13 @@ const VideoPlayer = () => {
           <AnimatePresence>
             {snap.isKeymapDialogOpen && (
               <KeymapDialog onClose={() => videoActions.toggleKeymapDialog()} />
+            )}
+          </AnimatePresence>
+
+          {/* Keybindings Dialog */}
+          <AnimatePresence>
+            {snap.isKeybindingsDialogOpen && (
+              <KeybindingsDialog onClose={() => videoActions.toggleKeybindingsDialog()} />
             )}
           </AnimatePresence>
 

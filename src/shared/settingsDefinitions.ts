@@ -14,6 +14,7 @@ export const deafultSettings = {
     app__autoUpdate: true,
     app__enableFileAssociations: false,
     app__ignoredOnSave: [] as string[],
+    app__useNormalBorder: false,
 
     controls__wheelVolumeControl: true,
     controls__zoomEnabled: true,
@@ -77,5 +78,9 @@ export const settingsUi: Partial<Record<keyof AppSettings, boolean | {
     player__autoPlay: false,
     app__enableFileAssociations: {
         tip: 'Enable file associations for .mpv files.',
+    },
+    app__useNormalBorder: {
+        tip: 'Use normal window border instead of borderless window (requires restart).',
+        requiresRestart: true,
     },
 }

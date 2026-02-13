@@ -336,6 +336,13 @@ export const commands = makeCommands({
     category: 'Help',
     keybind: { code: 'Slash', shiftKey: true }
   },
+  help_showKeybindings: {
+    name: 'Show Keybindings Configuration',
+    description: 'Display and configure keybindings',
+    action: videoActions.toggleKeybindingsDialog,
+    category: 'Help',
+    keybind: { code: 'Slash', ctrlKey: true, shiftKey: true }
+  },
   help_showCommandPalette: {
     name: 'Show Command Palette',
     description: 'Open command palette to search and execute commands',
@@ -363,6 +370,16 @@ export const commands = makeCommands({
     action: videoActions.resetPlaybackRate,
     category: 'Video',
     keybind: { code: 'Digit0' }
+  },
+  video_resetToStart: {
+    name: 'Reset to Start',
+    description: 'Reset video playback to beginning (0:00)',
+    action: () => {
+      videoActions.setCurrentTime(0);
+      videoActions.setProgress(0);
+    },
+    category: 'Video',
+    keybind: { code: 'Digit0', shiftKey: true }
   },
   file_open: {
     name: 'Open File',

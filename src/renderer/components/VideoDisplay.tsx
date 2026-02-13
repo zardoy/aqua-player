@@ -75,14 +75,19 @@ const VideoDisplay: React.FC<VideoDisplayProps> = ({ videoRef }) => {
 
   useEffect(() => {
     const video = videoRef.current;
-    if (!video || video.ended) return;
+    if (!video) return;
+
+    // If video ended but we want to play (after resetting), reset the video time first
+    if (video.ended && snap.isPlaying && !snap.isEnded) {
+      video.currentTime = 0;
+    }
 
     if (snap.isPlaying && video.paused) {
       playVideo();
     } else if (!snap.isPlaying && !video.paused) {
       video.pause();
     }
-  }, [snap.isPlaying, videoRef]);
+  }, [snap.isPlaying, snap.isEnded, videoRef]);
 
   // Handle volume changes
   useEffect(() => {
@@ -175,22 +180,46 @@ const VideoDisplay: React.FC<VideoDisplayProps> = ({ videoRef }) => {
     if (!ms) return;
 
     try {
-      // Set metadata so OS/media keys UIs can show file title
+      // Set metadata so OS/media keys UIs can show file title with app logo as artwork
       const Metadata = (window as any).MediaMetadata;
       if (Metadata) {
-        ms.metadata = new Metadata({ title: fileName, artist: '', album: '' });
+        ms.metadata = new Metadata({ 
+          title: fileName, 
+          artist: 'Aqua Player', 
+          album: '',
+          artwork: [
+            { src: '/assets/icon.png', sizes: '512x512', type: 'image/png' }
+          ]
+        });
       } else {
         ms.metadata = { title: fileName };
       }
 
       ms.playbackState = snap.isPlaying ? 'playing' : 'paused';
 
-      ms.setActionHandler('previoustrack', () => {
-        videoActions.loadPreviousFile();
-      });
-      ms.setActionHandler('nexttrack', () => {
-        videoActions.loadNextFile();
-      });
+      // Check if there's a previous file in the playlist
+      const currentIndex = snap.playlistFiles.indexOf(snap.currentFile);
+      const hasPrevious = currentIndex > 0;
+      const hasNext = currentIndex >= 0 && currentIndex < snap.playlistFiles.length - 1;
+
+      // Only set previoustrack handler if there's a previous file
+      if (hasPrevious) {
+        ms.setActionHandler('previoustrack', () => {
+          videoActions.loadPreviousFile();
+        });
+      } else {
+        ms.setActionHandler('previoustrack', null);
+      }
+
+      // Only set nexttrack handler if there's a next file
+      if (hasNext) {
+        ms.setActionHandler('nexttrack', () => {
+          videoActions.loadNextFile();
+        });
+      } else {
+        ms.setActionHandler('nexttrack', null);
+      }
+
       ms.setActionHandler('play', () => videoActions.play());
       ms.setActionHandler('pause', () => videoActions.pause());
       ms.setActionHandler('seekbackward', (details: any) => {
@@ -215,7 +244,7 @@ const VideoDisplay: React.FC<VideoDisplayProps> = ({ videoRef }) => {
         ms.setActionHandler('seekforward', null);
       } catch { /* ignore */ }
     };
-  }, [snap.currentFile, snap.isPlaying]);
+  }, [snap.currentFile, snap.isPlaying, snap.playlistFiles]);
 
   // Handle Ctrl+wheel zoom and panning
   useEffect(() => {
