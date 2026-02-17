@@ -24,6 +24,9 @@ export const deafultSettings = {
     controls__shortSeekDistance: 1,
     controls__longSeekDistance: 10,
 
+    remoteUI__enabled: false,
+    remoteUI__password: '',
+
     // account__customServer: '', // https://aqua-player.zardoy.com/
     // account__token: '',
     // account__syncHistory: true,

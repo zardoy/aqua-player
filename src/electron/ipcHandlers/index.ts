@@ -5,6 +5,7 @@ import { setupSettingsHandlers } from './settingsHandlers';
 import { setupMetadataHandlers } from './metadataHandlers';
 import { setupSystemHandlers } from './systemHandlers';
 import { setupLogForwarding } from './logHandlers';
+import { setupRemoteUIHandlers } from './remoteUIHandlers';
 
 export function setupIpcHandlers(window: BrowserWindow) {
   const allHandlers = {
@@ -13,7 +14,8 @@ export function setupIpcHandlers(window: BrowserWindow) {
     ...setupSettingsHandlers(),
     ...setupMetadataHandlers(),
     ...setupSystemHandlers(window),
-    ...setupLogForwarding(window)
+    ...setupLogForwarding(window),
+    ...setupRemoteUIHandlers(window)
   };
 
   for (const [key, handler] of Object.entries(allHandlers)) {
